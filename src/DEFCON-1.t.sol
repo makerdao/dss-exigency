@@ -46,20 +46,20 @@ contract DssSpellTest is DSTest, DSMath {
     SystemValues beforeSpell = SystemValues({
         dsr: 1000000000000000000000000000,
         dsrPct: 0 * 1000,
-        lineETH: mul(90000000, RAD),
-        dutyETH: 1000000000158153903837946257,
+        lineETH: mul(120000000, RAD),
+        dutyETH: 1000000000000000000000000000,
         pctETH: 0.5 * 1000,
         tauETH: 6 hours,
         lineUSDC: mul(20000000, RAD),
-        dutyUSDC: 1000000004706367499604668374,
+        dutyUSDC: 1000000000000000000000000000,
         pctUSDC: 16 * 1000,
         tauUSDC: 3 days,
         lineBAT: mul(3000000, RAD),
-        dutyBAT: 1000000000158153903837946257,
+        dutyBAT: 1000000000000000000000000000,
         pctBAT: 0.5 * 1000,
         tauBAT: 6 hours,
         lineWBTC: mul(3000000, RAD),
-        dutyWBTC: 1000000000158153903837946257,
+        dutyWBTC: 1000000000000000000000000000,
         pctWBTC: 0.5 * 1000,
         tauWBTC: 6 hours,
         lineSAI: mul(10000000, RAD),
@@ -72,7 +72,7 @@ contract DssSpellTest is DSTest, DSMath {
     SystemValues afterSpell = SystemValues({
         dsr: 1000000000000000000000000000,
         dsrPct: 0 * 1000,
-        lineETH: mul(90000000, RAD),
+        lineETH: mul(120000000, RAD),
         dutyETH: 1000000000000000000000000000,
         pctETH: 0 * 1000,
         tauETH: 24 hours,
@@ -342,7 +342,7 @@ contract DssSpellTest is DSTest, DSMath {
         assertEq(uint256(eflip.tau()), afterSpell.tauETH);
         assertEq(uint256(uflip.tau()), afterSpell.tauUSDC);
         assertEq(uint256(bflip.tau()), afterSpell.tauBAT);
-        assertEq(uint256(btcflip.tau()), afterSpell.tauwbtc);
+        assertEq(uint256(btcflip.tau()), afterSpell.tauWBTC);
 
     }
 
