@@ -29,7 +29,7 @@ contract SpellAction {
     address constant public MCD_FLIP_BAT_A =
         0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
     address constant public MCD_FLIP_WBTC_A =
-        0x0000000000000000000000000000000000000000;  // TODO: Update
+        0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
     // address constant public MCD_FLIP_USDC_A =
     //     0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
     address constant public FLIPPER_MOM =
@@ -155,7 +155,7 @@ contract DssSpell {
     address constant public MCD_FLIP_USDC_A =
         0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
     address constant public MCD_FLIP_WBTC_A =
-        0x0000000000000000000000000000000000000000;  // TODO: Update
+        0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
     address constant public FLIPPER_MOM =
         0x9BdDB99625A711bf9bda237044924E34E8570f75;
 

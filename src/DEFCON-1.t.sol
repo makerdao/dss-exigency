@@ -118,7 +118,7 @@ contract DssSpellTest is DSTest, DSMath {
     FlipAbstract  bflip =
         FlipAbstract(0xaA745404d55f88C108A28c86abE7b5A1E7817c07);
     FlipAbstract  btcflip =
-        FlipAbstract(address(0)); // TODO: Update
+        FlipAbstract(0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603);
     FlipAbstract  uflip =
         FlipAbstract(0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1);
 
