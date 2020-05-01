@@ -9,4 +9,4 @@
 	url = https://github.com/makerdao/dss-interfaces.git
 [submodule "lib/ds-math"]
 	path = lib/ds-math
-	url = https://github.com/dapphub/ds-math.git
+	url = https://github.com/dapphub/ds-math
