@@ -30,8 +30,8 @@ contract SpellAction {
         0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
     address constant public MCD_FLIP_WBTC_A =
         0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
-    // address constant public MCD_FLIP_USDC_A =
-    //     0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
+    address constant public MCD_FLIP_USDC_A =
+        0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
     address constant public FLIPPER_MOM =
         0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
@@ -115,7 +115,8 @@ contract SpellAction {
         (,,, uint256 batALine,)  = VatAbstract(MCD_VAT).ilks("BAT-A");
         (,,, uint256 wbtcALine,) = VatAbstract(MCD_VAT).ilks("WBTC-A");
         (,,, uint256 usdcALine,) = VatAbstract(MCD_VAT).ilks("USDC-A");
-        uint256 GLOBAL_LINE = saiLine + ethALine + batALine + wbtcALine + usdcALine;
+        uint256 GLOBAL_LINE =
+            saiLine + ethALine + batALine + wbtcALine + usdcALine;
         VatAbstract(MCD_VAT).file("Line", GLOBAL_LINE);
 
         // Set the ETH-A Flip tau
@@ -143,8 +144,8 @@ contract SpellAction {
         //
         // USDC_A_FLIP_TAU is the bid lifetime
         //
-        // uint256 USDC_A_FLIP_TAU = 24 hours;
-        // FlipAbstract(MCD_FLIP_USDC_A).file(bytes32("tau"), USDC_A_FLIP_TAU);
+        uint256 USDC_A_FLIP_TAU = 24 hours;
+        FlipAbstract(MCD_FLIP_USDC_A).file(bytes32("tau"), USDC_A_FLIP_TAU);
 
         // Enable all collateral liquidations
         //
