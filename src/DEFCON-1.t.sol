@@ -34,6 +34,7 @@ contract DssSpellTest is DSTest, DSMath {
         uint256 duty;
         uint256 pct;
         uint48  tau;
+        uint256 liquidations;
     }
 
     struct SystemValues {
@@ -148,7 +149,8 @@ contract DssSpellTest is DSTest, DSMath {
                 line: line,
                 duty: 1000000000000000000000000000,
                 pct: 0 * 1000,
-                tau: 24 hours
+                tau: 24 hours,
+                liquidations: 1
             });
         }
 
@@ -157,7 +159,8 @@ contract DssSpellTest is DSTest, DSMath {
             line: 40 * MILLION * RAD,
             duty: 1000000012857214317438491659,
             pct: 50 * 1000,
-            tau: 24 hours
+            tau: 24 hours,
+            liquidations: 0
         });
     }
 
@@ -226,6 +229,7 @@ contract DssSpellTest is DSTest, DSMath {
 
     function checkCollateralValues(
         bytes32 ilk,
+        FlipAbstract flip,
         SystemValues storage values
     ) internal {
         (uint duty,)  = jug.ilks(ilk);
@@ -238,7 +242,8 @@ contract DssSpellTest is DSTest, DSMath {
         (,,, uint256 line,) = vat.ilks(ilk);
         assertEq(line, values.collaterals[ilk].line);
 
-        assertEq(uint256(eFlip.tau()), values.collaterals[ilk].tau);
+        assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
+        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
     }
 
     function testSpellIsCast() public {
@@ -253,9 +258,9 @@ contract DssSpellTest is DSTest, DSMath {
         checkSpellValues(defconSpell);
 
         // Collateral values
-        checkCollateralValues("ETH-A", defconSpell);
-        checkCollateralValues("BAT-A", defconSpell);
-        checkCollateralValues("USDC-A", defconSpell);
-        checkCollateralValues("WBTC-A", defconSpell);
+        checkCollateralValues("ETH-A",  eFlip, defconSpell);
+        checkCollateralValues("BAT-A",  bFlip, defconSpell);
+        checkCollateralValues("USDC-A", uFlip, defconSpell);
+        checkCollateralValues("WBTC-A", wFlip, defconSpell);
     }
 }
