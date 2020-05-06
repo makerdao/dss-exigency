@@ -34,6 +34,7 @@ contract DssSpellTest is DSTest, DSMath {
         uint256 duty;
         uint256 pct;
         uint48  tau;
+        uint256 liquidations;
     }
 
     struct SystemValues {
@@ -41,7 +42,8 @@ contract DssSpellTest is DSTest, DSMath {
         mapping (bytes32 => CollateralValues) collaterals;
     }
 
-    SystemValues defconSpell;
+    SystemValues beforeSpell;
+    SystemValues afterSpell;
 
     Hevm hevm;
 
@@ -132,7 +134,12 @@ contract DssSpellTest is DSTest, DSMath {
         spell = MAINNET_SPELL != address(0) ?
             DssSpell(MAINNET_SPELL) : new DssSpell();
 
-        defconSpell = SystemValues({
+        // beforeSpell is only used to check liquidations
+        beforeSpell = SystemValues({
+            expiration: T2020_07_01_1200UTC
+        });
+
+        afterSpell = SystemValues({
             expiration: T2020_07_01_1200UTC
         });
 
@@ -144,20 +151,36 @@ contract DssSpellTest is DSTest, DSMath {
 
         for(uint i = 0; i < ilks.length; i++) {
             (,,, uint256 line,) = vat.ilks(ilks[i]);
-            defconSpell.collaterals[ilks[i]] = CollateralValues({
+            beforeSpell.collaterals[ilks[i]] = CollateralValues({
+                line: line,                            // not tested
+                duty: 1000000000000000000000000000,    // not tested
+                pct: 0 * 1000,                         // not tested
+                tau: 24 hours,                         // not tested
+                liquidations: 1
+            });
+            afterSpell.collaterals[ilks[i]] = CollateralValues({
                 line: line,
                 duty: 1000000000000000000000000000,
                 pct: 0 * 1000,
-                tau: 24 hours
+                tau: 24 hours,
+                liquidations: 1
             });
         }
 
         // USDC-A emergency parameters
-        defconSpell.collaterals["USDC-A"] = CollateralValues({
+        beforeSpell.collaterals["USDC-A"] = CollateralValues({
+            line: 40 * MILLION * RAD,                  // not tested
+            duty: 1000000012857214317438491659,        // not tested
+            pct: 50 * 1000,                            // not tested
+            tau: 24 hours,                             // not tested
+            liquidations: 0
+        });
+        afterSpell.collaterals["USDC-A"] = CollateralValues({
             line: 40 * MILLION * RAD,
             duty: 1000000012857214317438491659,
             pct: 50 * 1000,
-            tau: 24 hours
+            tau: 24 hours,
+            liquidations: 0
         });
     }
 
@@ -180,6 +203,10 @@ contract DssSpellTest is DSTest, DSMath {
     function waitAndCast() public {
         hevm.warp(now + pause.delay());
         spell.cast();
+    }
+
+    function schedule() public {
+        spell.schedule();
     }
 
     function scheduleWaitAndCast() public {
@@ -224,8 +251,17 @@ contract DssSpellTest is DSTest, DSMath {
         assertEq(spell.expiration(), values.expiration);
     }
 
+    function checkLiquidationValues(
+        bytes32 ilk,
+        FlipAbstract flip,
+        SystemValues storage values
+    ) internal {
+        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
+    }
+
     function checkCollateralValues(
         bytes32 ilk,
+        FlipAbstract flip,
         SystemValues storage values
     ) internal {
         (uint duty,)  = jug.ilks(ilk);
@@ -238,24 +274,30 @@ contract DssSpellTest is DSTest, DSMath {
         (,,, uint256 line,) = vat.ilks(ilk);
         assertEq(line, values.collaterals[ilk].line);
 
-        assertEq(uint256(eFlip.tau()), values.collaterals[ilk].tau);
+        assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
+        checkLiquidationValues(ilk, flip, values);
     }
 
     function testSpellIsCast() public {
-        // -------------------
         vote();
-        scheduleWaitAndCast();
-        // spell done
+        schedule();
+
+        // Liquidation values
+        checkLiquidationValues("ETH-A",  eFlip, beforeSpell);
+        checkLiquidationValues("BAT-A",  bFlip, beforeSpell);
+        checkLiquidationValues("USDC-A", uFlip, beforeSpell);
+        checkLiquidationValues("WBTC-A", wFlip, beforeSpell);
+
+        waitAndCast();
         assertTrue(spell.done());
-        // -------------------
 
         // General System values
-        checkSpellValues(defconSpell);
+        checkSpellValues(afterSpell);
 
         // Collateral values
-        checkCollateralValues("ETH-A", defconSpell);
-        checkCollateralValues("BAT-A", defconSpell);
-        checkCollateralValues("USDC-A", defconSpell);
-        checkCollateralValues("WBTC-A", defconSpell);
+        checkCollateralValues("ETH-A",  eFlip, afterSpell);
+        checkCollateralValues("BAT-A",  bFlip, afterSpell);
+        checkCollateralValues("USDC-A", uFlip, afterSpell);
+        checkCollateralValues("WBTC-A", wFlip, afterSpell);
     }
 }
