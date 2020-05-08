@@ -1,3 +1,18 @@
+// Copyright (C) 2020 Maker Ecosystem Growth Holdings, INC.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 pragma solidity 0.5.12;
 
 import "ds-math/math.sol";
@@ -9,125 +24,74 @@ import {DssSpell, SpellAction} from "./DEFCON-3.sol";
 contract Hevm { function warp(uint) public; }
 
 contract DssSpellTest is DSTest, DSMath {
-
     // Replace with mainnet spell address to test against live
     address constant MAINNET_SPELL = address(0);
-    uint256 constant public T2020_07_01_1200UTC = 1593604800;
 
-    struct SystemValues {
-        uint256 dsr;
-        uint256 dsrPct;
-        uint256 lineETH;
-        uint256 dutyETH;
-        uint256 pctETH;
-        uint48  tauETH;
-        uint256 lineUSDC;
-        uint256 dutyUSDC;
-        uint256 pctUSDC;
-        uint48  tauUSDC;
-        uint256 lineBAT;
-        uint256 dutyBAT;
-        uint256 pctBAT;
-        uint48  tauBAT;
-        uint256 lineWBTC;
-        uint256 dutyWBTC;
-        uint256 pctWBTC;
-        uint48  tauWBTC;
-        uint256 lineSAI;
-        uint256 lineGlobal;
-        uint256 saiCap;
-        uint256 saiFee;
-        uint256 saiPct;
+    uint256 constant MILLION = 10**6;
+
+    struct CollateralValues {
+        uint256 line;
+        uint256 duty;
+        uint256 pct;
+        uint48  tau;
+        uint256 liquidations;
     }
 
-    // If last week's spell was cast successfully, you can copy the
-    //  the values from that week's `afterSpell` var into this week's
-    //  `beforeSpell` var. Or go back to the last successful executive.
-    SystemValues beforeSpell = SystemValues({
-        dsr: 1000000000000000000000000000,
-        dsrPct: 0 * 1000,
-        lineETH: mul(120000000, RAD),
-        dutyETH: 1000000000000000000000000000,
-        pctETH: 0.5 * 1000,
-        tauETH: 6 hours,
-        lineUSDC: mul(20000000, RAD),
-        dutyUSDC: 1000000004706367499604668374,
-        pctUSDC: 16 * 1000,
-        tauUSDC: 3 days,
-        lineBAT: mul(3000000, RAD),
-        dutyBAT: 1000000000000000000000000000,
-        pctBAT: 0.5 * 1000,
-        tauBAT: 6 hours,
-        lineWBTC: mul(3000000, RAD),
-        dutyWBTC: 1000000000000000000000000000,
-        pctWBTC: 0.5 * 1000,
-        tauWBTC: 6 hours,
-        lineSAI: mul(10000000, RAD),
-        lineGlobal: mul(123000000, RAD),
-        saiCap: mul(20000000, WAD),
-        saiFee: 1000000002293273137447730714,
-        saiPct: 7.5 * 1000
-    });
+    struct SystemValues {
+        uint256 expiration;
+        mapping (bytes32 => CollateralValues) collaterals;
+    }
 
-    SystemValues afterSpell = SystemValues({
-        dsr: 1000000000000000000000000000,
-        dsrPct: 0 * 1000,
-        lineETH: mul(120000000, RAD),
-        dutyETH: 1000000000000000000000000000,
-        pctETH: 0 * 1000,
-        tauETH: 6 hours,
-        lineUSDC: mul(40000000, RAD),
-        dutyUSDC: 1000000012857214317438491659,
-        pctUSDC: 50 * 1000,
-        tauUSDC: 3 days,
-        lineBAT: mul(3000000, RAD),
-        dutyBAT: 1000000000000000000000000000,
-        pctBAT: 0 * 1000,
-        tauBAT: 6 hours,
-        lineWBTC: mul(3000000, RAD),
-        dutyWBTC: 1000000000000000000000000000,
-        pctWBTC: 0 * 1000,
-        tauWBTC: 6 hours,
-        lineSAI: mul(10000000, RAD),
-        lineGlobal: mul(143000000, RAD),
-        saiCap: mul(20000000, WAD),
-        saiFee: 1000000002293273137447730714,
-        saiPct: 7.5 * 1000
-    });
+    SystemValues beforeSpell;
+    SystemValues afterSpell;
 
     Hevm hevm;
 
     DSPauseAbstract pause =
         DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
     DSChiefAbstract chief =
-        DSChiefAbstract(0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
-    VatAbstract     vat =
-        VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
-    CatAbstract     cat =
-        CatAbstract(0x78F2c2AF65126834c51822F56Be0d7469D7A523E);
-    PotAbstract     pot =
-        PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
-    JugAbstract     jug =
-        JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
-    MKRAbstract     gov =
-        MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    SaiTubAbstract  tub =
-        SaiTubAbstract(0x448a5065aeBB8E423F0896E6c5D525C040f59af3);
-    FlipAbstract  eflip =
-        FlipAbstract(0xd8a04F5412223F513DC55F839574430f5EC15531);
-    FlipAbstract  bflip =
-        FlipAbstract(0xaA745404d55f88C108A28c86abE7b5A1E7817c07);
-    FlipAbstract  btcflip =
-        FlipAbstract(0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603);
-    FlipAbstract  uflip =
-        FlipAbstract(0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1);
+         DSChiefAbstract(0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
+    VatAbstract vat =
+         VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
+    CatAbstract cat =
+         CatAbstract(0x78F2c2AF65126834c51822F56Be0d7469D7A523E);
+    PotAbstract pot =
+         PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
+    JugAbstract jug =
+         JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
+    SpotAbstract spot =
+         SpotAbstract(0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
+    MKRAbstract gov =
+         MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
+    SaiTubAbstract tub =
+         SaiTubAbstract(0x448a5065aeBB8E423F0896E6c5D525C040f59af3);
+    FlipAbstract eFlip =
+         FlipAbstract(0xd8a04F5412223F513DC55F839574430f5EC15531);
+    FlipAbstract bFlip =
+         FlipAbstract(0xaA745404d55f88C108A28c86abE7b5A1E7817c07);
+    FlipAbstract uFlip =
+         FlipAbstract(0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1);
+    FlipAbstract wFlip =
+         FlipAbstract(0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603);
+    SaiTopAbstract top =
+         SaiTopAbstract(0x9b0ccf7C8994E19F39b2B4CF708e0A7DF65fA8a3);
+    EndAbstract end =
+         EndAbstract(0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5);
+    GemAbstract wbtc =
+         GemAbstract(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
+    GemJoinAbstract wJoin =
+         GemJoinAbstract(0xBF72Da2Bd84c5170618Fbe5914B0ECA9638d5eb5);
+    OsmAbstract wPip =
+         OsmAbstract(0xf185d0682d50819263941e5f4EacC763CC5C6C42);
+    address flipperMom =
+         address(0x9BdDB99625A711bf9bda237044924E34E8570f75);
+    address osmMom =
+         address(0x76416A4d5190d071bfed309861527431304aA14f);
+    address pauseProxy =
+         address(0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB);
+
 
     DssSpell spell;
-
-    // this spell is intended to run as the MkrAuthority
-    function canCall(address, address, bytes4) public pure returns (bool) {
-        return true;
-    }
 
     // CHEAT_CODE = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
     bytes20 constant CHEAT_CODE =
@@ -161,11 +125,63 @@ contract DssSpellTest is DSTest, DSMath {
     // 10^-5 (tenth of a basis point) as a RAY
     uint256 TOLERANCE = 10 ** 22;
 
+    // expiration time for this DEFCON spell
+    uint256 constant public T2020_07_01_1200UTC = 1593604800;
+
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
-        // Using the MkrAuthority test address, mint enough MKR to overcome the
-        // current hat.
-        gov.mint(address(this), 300000 ether);
+
+        spell = MAINNET_SPELL != address(0) ?
+            DssSpell(MAINNET_SPELL) : new DssSpell();
+
+        // beforeSpell is only used to check liquidations
+        beforeSpell = SystemValues({
+            expiration: T2020_07_01_1200UTC
+        });
+
+        afterSpell = SystemValues({
+            expiration: T2020_07_01_1200UTC
+        });
+
+        bytes32[3] memory ilks = [
+            bytes32("ETH-A"),
+            bytes32("BAT-A"),
+            bytes32("WBTC-A")
+        ];
+
+        for(uint i = 0; i < ilks.length; i++) {
+            (,,, uint256 line,) = vat.ilks(ilks[i]);
+            beforeSpell.collaterals[ilks[i]] = CollateralValues({
+                line: line,                            // not tested
+                duty: 1000000000000000000000000000,    // not tested
+                pct: 0 * 1000,                         // not tested
+                tau: 24 hours,                         // not tested
+                liquidations: 0
+            });
+            afterSpell.collaterals[ilks[i]] = CollateralValues({
+                line: line,
+                duty: 1000000000000000000000000000,
+                pct: 0 * 1000,
+                tau: 24 hours,                         // not tested
+                liquidations: 1
+            });
+        }
+
+        // USDC-A emergency parameters
+        beforeSpell.collaterals["USDC-A"] = CollateralValues({
+            line: 40 * MILLION * RAD,                  // not tested
+            duty: 1000000012857214317438491659,        // not tested
+            pct: 50 * 1000,                            // not tested
+            tau: 24 hours,                             // not tested
+            liquidations: 0
+        });
+        afterSpell.collaterals["USDC-A"] = CollateralValues({
+            line: 40 * MILLION * RAD,
+            duty: 1000000012857214317438491659,
+            pct: 50 * 1000,
+            tau: 24 hours,                             // not tested
+            liquidations: 0
+        });
     }
 
     function vote() private {
@@ -185,19 +201,25 @@ contract DssSpellTest is DSTest, DSMath {
     }
 
     function waitAndCast() public {
-        hevm.warp(add(now, pause.delay()));
+        hevm.warp(now + pause.delay());
         spell.cast();
+    }
+
+    function schedule() public {
+        spell.schedule();
     }
 
     function scheduleWaitAndCast() public {
         spell.schedule();
-        hevm.warp(add(now, pause.delay()));
+        hevm.warp(now + pause.delay());
         spell.cast();
     }
 
-    function stringToBytes32(string memory source) public pure returns (bytes32 result) {
+    function stringToBytes32(
+        string memory source
+    ) public pure returns (bytes32 result) {
         assembly {
-        result := mload(add(source, 32))
+            result := mload(add(source, 32))
         }
     }
 
@@ -209,15 +231,15 @@ contract DssSpellTest is DSTest, DSMath {
         return (100000 + percentValue) * (10 ** 22);
     }
 
-    function diffCalc(uint256 expectedRate, uint256 yearlyYield) public pure returns (uint256) {
-        return (expectedRate > yearlyYield) ? expectedRate - yearlyYield : yearlyYield - expectedRate;
+    function diffCalc(
+        uint256 expectedRate_,
+        uint256 yearlyYield_
+    ) public pure returns (uint256) {
+        return (expectedRate_ > yearlyYield_) ?
+            expectedRate_ - yearlyYield_ : yearlyYield_ - expectedRate_;
     }
 
-    function testSpellIsCast() public {
-
-        spell = MAINNET_SPELL != address(0) ?
-            DssSpell(MAINNET_SPELL) : new DssSpell();
-
+    function checkSpellValues(SystemValues storage values) internal {
         // Test description
         string memory description = new SpellAction().description();
         assertTrue(bytes(description).length > 0);
@@ -226,152 +248,56 @@ contract DssSpellTest is DSTest, DSMath {
             stringToBytes32(description));
 
         // Test expiration
-        // TODO fix this for deployed contract
-        if(address(spell) != address(MAINNET_SPELL)) {
-            assertEq(spell.expiration(), (T2020_07_01_1200UTC));
-        }
-
-        // (ETH-A, USDC-A, BAT-A, WBTC-A, DSR)
-        (uint dutyETH,)  = jug.ilks("ETH-A");
-        (uint dutyUSDC,) = jug.ilks("USDC-A");
-        (uint dutyBAT,)  = jug.ilks("BAT-A");
-        (uint dutyWBTC,) = jug.ilks("WBTC-A");
-        assertEq(dutyETH,   beforeSpell.dutyETH);
-        assertTrue(diffCalc(expectedRate(beforeSpell.pctETH), yearlyYield(beforeSpell.dutyETH)) <= TOLERANCE);
-        assertEq(dutyUSDC,   beforeSpell.dutyUSDC);
-        assertTrue(diffCalc(expectedRate(beforeSpell.pctUSDC), yearlyYield(beforeSpell.dutyUSDC)) <= TOLERANCE);
-        assertEq(dutyBAT,   beforeSpell.dutyBAT);
-        assertTrue(diffCalc(expectedRate(beforeSpell.pctBAT), yearlyYield(beforeSpell.dutyBAT)) <= TOLERANCE);
-        assertEq(dutyWBTC,   beforeSpell.dutyWBTC);
-        assertTrue(diffCalc(expectedRate(beforeSpell.pctWBTC), yearlyYield(beforeSpell.dutyWBTC)) <= TOLERANCE);
-        assertEq(pot.dsr(), beforeSpell.dsr);
-        assertTrue(diffCalc(expectedRate(beforeSpell.dsrPct), yearlyYield(beforeSpell.dsr)) <= TOLERANCE);
-
-        // ETH-A line
-        (,,, uint256 lineETH,) = vat.ilks("ETH-A");
-        assertEq(lineETH, beforeSpell.lineETH);
-
-        // USDC-A line
-        (,,, uint256 lineUSDC,) = vat.ilks("USDC-A");
-        assertEq(lineUSDC, beforeSpell.lineUSDC);
-
-        // BAT-A line
-        (,,, uint256 lineBAT,) = vat.ilks("BAT-A");
-        assertEq(lineBAT, beforeSpell.lineBAT);
-
-        // WBTC-A line
-        (,,, uint256 lineWBTC,) = vat.ilks("WBTC-A");
-        assertEq(lineWBTC, beforeSpell.lineWBTC);
-
-        // SAI line
-        (,,, uint256 lineSAI,) = vat.ilks("SAI");
-        assertEq(lineSAI, beforeSpell.lineSAI);
-
-        // Line
-        assertEq(vat.Line(), beforeSpell.lineGlobal);
-
-        // SCD DC
-        assertEq(tub.cap(), beforeSpell.saiCap);
-
-        // SCD Fee
-        assertEq(tub.fee(), beforeSpell.saiFee);
-        assertTrue(diffCalc(expectedRate(beforeSpell.saiPct), yearlyYield(beforeSpell.saiFee)) <= TOLERANCE);
-
-        // flip tau amount precheck
-        assertEq(uint256(eflip.tau()), beforeSpell.tauETH);
-        assertEq(uint256(uflip.tau()), beforeSpell.tauUSDC);
-        assertEq(uint256(bflip.tau()), beforeSpell.tauBAT);
-        assertEq(uint256(btcflip.tau()), beforeSpell.tauWBTC);
-
-        vote();
-
-        scheduleWaitAndCast();
-
-        // spell done
-        assertTrue(spell.done());
-
-        // dsr
-        assertEq(pot.dsr(), afterSpell.dsr);
-        assertTrue(diffCalc(expectedRate(afterSpell.dsrPct), yearlyYield(afterSpell.dsr)) <= TOLERANCE);
-
-        // (ETH-A, USDC-A, BAT-A, WBTC-A)
-        (dutyETH,)  = jug.ilks("ETH-A");
-        (dutyUSDC,) = jug.ilks("USDC-A");
-        (dutyBAT,)  = jug.ilks("BAT-A");
-        (dutyWBTC,) = jug.ilks("WBTC-A");
-        assertEq(dutyETH, afterSpell.dutyETH);
-        assertTrue(diffCalc(expectedRate(afterSpell.pctETH), yearlyYield(afterSpell.dutyETH)) <= TOLERANCE);
-        assertEq(dutyUSDC, afterSpell.dutyUSDC);
-        assertTrue(diffCalc(expectedRate(afterSpell.pctUSDC), yearlyYield(afterSpell.dutyUSDC)) <= TOLERANCE);
-        assertEq(dutyBAT, afterSpell.dutyBAT);
-        assertTrue(diffCalc(expectedRate(afterSpell.pctBAT), yearlyYield(afterSpell.dutyBAT)) <= TOLERANCE);
-        assertEq(dutyWBTC, afterSpell.dutyWBTC);
-        assertTrue(diffCalc(expectedRate(afterSpell.pctWBTC), yearlyYield(afterSpell.dutyWBTC)) <= TOLERANCE);
-
-        // ETH-A line
-        (,,, lineETH,) = vat.ilks("ETH-A");
-        assertEq(lineETH, afterSpell.lineETH);
-
-        // USDC-A line
-        (,,, lineUSDC,) = vat.ilks("USDC-A");
-        assertEq(lineUSDC, afterSpell.lineUSDC);
-
-        // BAT-A line
-        (,,, lineBAT,) = vat.ilks("BAT-A");
-        assertEq(lineBAT, afterSpell.lineBAT);
-
-        // WBTC-A line
-        (,,, lineWBTC,) = vat.ilks("WBTC-A");
-        assertEq(lineWBTC, afterSpell.lineWBTC);
-
-        // SAI line
-        (,,, lineSAI,) = vat.ilks("SAI");
-        assertEq(lineSAI, afterSpell.lineSAI);
-
-        // Line
-        assertEq(vat.Line(), afterSpell.lineGlobal);
-
-        // SCD DC
-        assertEq(tub.cap(), afterSpell.saiCap);
-
-        // SCD Fee
-        assertEq(tub.fee(), afterSpell.saiFee);
-        assertTrue(diffCalc(expectedRate(afterSpell.saiPct), yearlyYield(afterSpell.saiFee)) <= TOLERANCE);
-
-        // flip tau amount
-        assertEq(uint256(eflip.tau()), afterSpell.tauETH);
-        assertEq(uint256(uflip.tau()), afterSpell.tauUSDC);
-        assertEq(uint256(bflip.tau()), afterSpell.tauBAT);
-        assertEq(uint256(btcflip.tau()), afterSpell.tauWBTC);
-
+        assertEq(spell.expiration(), values.expiration);
     }
 
-    function testCircuitBreaker() public {
-        spell = MAINNET_SPELL != address(0) ?
-            DssSpell(MAINNET_SPELL) : new DssSpell();
+    function checkLiquidationValues(
+        bytes32 ilk,
+        FlipAbstract flip,
+        SystemValues storage values
+    ) internal {
+        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
+    }
 
-        // collateral liquidations enabled/disabled
-        assertEq(eflip.wards(address(cat)), 1);
-        assertEq(bflip.wards(address(cat)), 1);
-        assertEq(btcflip.wards(address(cat)), 1);
-        assertEq(uflip.wards(address(cat)), 0);
+    function checkCollateralValues(
+        bytes32 ilk,
+        FlipAbstract flip,
+        SystemValues storage values
+    ) internal {
+        (uint duty,)  = jug.ilks(ilk);
+        assertEq(duty, values.collaterals[ilk].duty);
+        assertTrue(diffCalc(
+            expectedRate(values.collaterals[ilk].pct),
+            yearlyYield(values.collaterals[ilk].duty)
+        ) <= TOLERANCE);
 
+        (,,, uint256 line,) = vat.ilks(ilk);
+        assertEq(line, values.collaterals[ilk].line);
+
+        // assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
+        checkLiquidationValues(ilk, flip, values);
+    }
+
+    function derpSpellIsCast() public {
         vote();
-        spell.schedule();
+        schedule();
 
-        // collateral liquidations enabled/disabled
-        assertEq(eflip.wards(address(cat)), 0);
-        assertEq(bflip.wards(address(cat)), 0);
-        assertEq(btcflip.wards(address(cat)), 0);
-        assertEq(uflip.wards(address(cat)), 0);
+        // Liquidation values
+        checkLiquidationValues("ETH-A",  eFlip, beforeSpell);
+        checkLiquidationValues("BAT-A",  bFlip, beforeSpell);
+        checkLiquidationValues("USDC-A", uFlip, beforeSpell);
+        checkLiquidationValues("WBTC-A", wFlip, beforeSpell);
 
         waitAndCast();
+        assertTrue(spell.done());
 
-        // collateral liquidations enabled/disabled
-        assertEq(eflip.wards(address(cat)), 1);
-        assertEq(bflip.wards(address(cat)), 1);
-        assertEq(btcflip.wards(address(cat)), 1);
-        assertEq(uflip.wards(address(cat)), 0);
+        // General System values
+        checkSpellValues(afterSpell);
+
+        // Collateral values
+        checkCollateralValues("ETH-A",  eFlip, afterSpell);
+        checkCollateralValues("BAT-A",  bFlip, afterSpell);
+        checkCollateralValues("USDC-A", uFlip, afterSpell);
+        checkCollateralValues("WBTC-A", wFlip, afterSpell);
     }
-
 }
