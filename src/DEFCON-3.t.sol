@@ -278,7 +278,7 @@ contract DssSpellTest is DSTest, DSMath {
         checkLiquidationValues(ilk, flip, values);
     }
 
-    function derpSpellIsCast() public {
+    function testSpellIsCast() public {
         vote();
         schedule();
 
