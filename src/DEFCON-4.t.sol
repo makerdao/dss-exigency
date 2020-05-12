@@ -25,7 +25,7 @@ contract Hevm { function warp(uint) public; }
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(0);
+    address constant MAINNET_SPELL = 0x1F3229185e8F5759dcF85337552afD48795a4D38;
 
     uint256 constant MILLION = 10**6;
 
