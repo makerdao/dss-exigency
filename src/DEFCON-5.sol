@@ -24,16 +24,16 @@ contract SpellAction {
         0x19c0976f590D67707E62397C87829d896Dc0f1F1;
     address constant public MCD_POT =
         0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant public MCD_FLIP_ETH_A =
-        0xd8a04F5412223F513DC55F839574430f5EC15531;
-    address constant public MCD_FLIP_BAT_A =
-        0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
-    address constant public MCD_FLIP_WBTC_A =
-        0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
+    // address constant public MCD_FLIP_ETH_A =
+    //     0xd8a04F5412223F513DC55F839574430f5EC15531;
+    // address constant public MCD_FLIP_BAT_A =
+    //     0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
+    // address constant public MCD_FLIP_WBTC_A =
+    //     0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
     // address constant public MCD_FLIP_USDC_A =
     //     0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
-    address constant public FLIPPER_MOM =
-        0x9BdDB99625A711bf9bda237044924E34E8570f75;
+    // address constant public FLIPPER_MOM =
+    //     0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
 
     // Many of the settings that change weekly rely on the rate accumulator
@@ -49,7 +49,6 @@ contract SpellAction {
     uint256 constant public MILLION = 10**6;
 
     function execute() external {
-
         // Drip Pot and Jugs prior to all modifications.
         PotAbstract(MCD_POT).drip();
         JugAbstract(MCD_JUG).drip("ETH-A");
@@ -87,21 +86,6 @@ contract SpellAction {
         //
         uint256 WBTC_A_FEE = ZERO_PCT_RATE;
         JugAbstract(MCD_JUG).file("WBTC-A", "duty", WBTC_A_FEE);
-
-
-        // Set the global debt ceiling
-        //
-        // GLOBAL_LINE is the total number of Dai that can be created by all
-        // collateral types as a whole number
-        //
-        (,,, uint256 saiLine,)   = VatAbstract(MCD_VAT).ilks("SAI");
-        (,,, uint256 ethALine,)  = VatAbstract(MCD_VAT).ilks("ETH-A");
-        (,,, uint256 batALine,)  = VatAbstract(MCD_VAT).ilks("BAT-A");
-        (,,, uint256 wbtcALine,) = VatAbstract(MCD_VAT).ilks("WBTC-A");
-        (,,, uint256 usdcALine,) = VatAbstract(MCD_VAT).ilks("USDC-A");
-        uint256 GLOBAL_LINE = saiLine + ethALine + batALine + wbtcALine + usdcALine;
-        VatAbstract(MCD_VAT).file("Line", GLOBAL_LINE);
-
     }
 }
 
@@ -116,16 +100,16 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    address constant public MCD_FLIP_ETH_A =
-        0xd8a04F5412223F513DC55F839574430f5EC15531;
-    address constant public MCD_FLIP_BAT_A =
-        0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
-    address constant public MCD_FLIP_USDC_A =
-        0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
-    address constant public MCD_FLIP_WBTC_A =
-        0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
-    address constant public FLIPPER_MOM =
-        0x9BdDB99625A711bf9bda237044924E34E8570f75;
+    // address constant public MCD_FLIP_ETH_A =
+    //     0xd8a04F5412223F513DC55F839574430f5EC15531;
+    // address constant public MCD_FLIP_BAT_A =
+    //     0xaA745404d55f88C108A28c86abE7b5A1E7817c07;
+    // address constant public MCD_FLIP_USDC_A =
+    //     0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1;
+    // address constant public MCD_FLIP_WBTC_A =
+    //     0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603;
+    // address constant public FLIPPER_MOM =
+    //     0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
     uint256 constant internal MILLION = 10**6;
     uint256 constant public T2020_07_01_1200UTC = 1593604800;
