@@ -90,8 +90,15 @@ contract SpellAction {
     uint256 constant public    ZERO_PCT_RATE = 1000000000000000000000000000;
     uint256 constant public   FIFTY_PCT_RATE = 1000000012857214317438491659;
 
-    uint256 constant public RAD = 10**45;
-    uint256 constant public MILLION = 10**6;
+    // Common orders of magnitude needed in spells
+    //
+    uint256 constant public WAD      = 10**18;
+    uint256 constant public RAY      = 10**27;
+    uint256 constant public RAD      = 10**45;
+    uint256 constant public HUNDRED  = 10**2;
+    uint256 constant public THOUSAND = 10**3;
+    uint256 constant public MILLION  = 10**6;
+    uint256 constant public BILLION  = 10**9;
 
     function execute() external {
         uint256 totalLine = 0;
@@ -166,7 +173,6 @@ contract SpellAction {
         // collateral.
         // ex. a 40 million Dai USDC-B ceiling will be USDC_B_LINE = 40000000
         //
-        // Existing Line: 10m
         // New Line: 40m
         uint256 USDC_B_LINE = 40 * MILLION * RAD;
         VatAbstract(MCD_VAT).file("USDC-B", "line", USDC_B_LINE);
@@ -195,7 +201,6 @@ contract DssSpell {
     address constant public ILK_REGISTRY =
         0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
 
-    uint256 constant internal MILLION = 10**6;
     uint256 constant public T2020_10_01_1200UTC = 1601553600;
 
     constructor() public {
