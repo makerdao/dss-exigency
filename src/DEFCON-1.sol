@@ -55,7 +55,7 @@ contract FlipperMomAbstract {
 // https://github.com/makerdao/ilk-registry/blob/master/src/IlkRegistry.sol
 contract IlkRegistryAbstract {
     function list() external view returns (bytes32[] memory);
-    function flip(bytes32 ilk) external view returns (address);
+    function flip(bytes32) external view returns (address);
 }
 
 contract SpellAction {
