@@ -118,25 +118,18 @@ contract DssSpellTest is DSTest, DSMath {
                 line: line,
                 duty: duty,
                 tau: flip.tau(),
-                liquidations: flip.wards(address(cat))
+                liquidations: 0
             });
             afterSpell.collaterals[ilks[i]] = CollateralValues({
                 line: line,
                 duty: 1000000000000000000000000000,
                 tau: 24 hours,
-                liquidations: 1
+                liquidations: flip.wards(address(cat))
             });
         }
 
-        // USDC-A emergency parameters
-        afterSpell.collaterals["USDC-A"].liquidations = 0;
-
-        // TUSD-A emergency parameters
-        afterSpell.collaterals["TUSD-A"].liquidations = 0;
-
         // USDC-B emergency parameters
         afterSpell.collaterals["USDC-B"].line = 40 * MILLION * RAD;
-        afterSpell.collaterals["USDC-B"].duty = 1000000012857214317438491659;
         afterSpell.collaterals["USDC-B"].liquidations = 0;
     }
 
@@ -227,7 +220,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes32[] memory ilks = registry.list();
 
         for(uint i = 0; i < ilks.length; i++) {
-            // Liquidation values
+            // Collateral values
             checkCollateralValues(ilks[i], beforeSpell);
         }
 

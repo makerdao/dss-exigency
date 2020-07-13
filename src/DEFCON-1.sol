@@ -85,8 +85,7 @@ contract SpellAction {
     //
     // $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
     //
-    uint256 constant public    ZERO_PCT_RATE = 1000000000000000000000000000;
-    uint256 constant public   FIFTY_PCT_RATE = 1000000012857214317438491659;
+    uint256 constant public ZERO_PCT_RATE = 1000000000000000000000000000;
 
     // Common orders of magnitude needed in spells
     //
@@ -161,10 +160,6 @@ contract SpellAction {
             //
             FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
         }
-
-        // Set the USDC-B stability fee
-        //
-        JugAbstract(MCD_JUG).file("USDC-B", "duty", FIFTY_PCT_RATE);
 
         // Set the USDC-B debt ceiling
         // USDC_B_LINE is the number of Dai that can be created with USDC token
