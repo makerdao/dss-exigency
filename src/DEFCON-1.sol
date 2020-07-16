@@ -76,7 +76,7 @@ contract SpellAction {
     address constant public FLIPPER_MOM =
         0x9BdDB99625A711bf9bda237044924E34E8570f75;
     address constant public ILK_REGISTRY =
-        0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
 
     // Many of the settings that change weekly rely on the rate accumulator
@@ -123,10 +123,6 @@ contract SpellAction {
             //
             JugAbstract(MCD_JUG).drip(ilks[i]);
 
-            // Set the ilk's flip tau
-            //
-            FlipAbstract(registry.flip(ilks[i])).file(bytes32("tau"), 24 hours);
-
             // skip the rest of the loop for the following ilks:
             //
             if (ilks[i] == "USDC-B") {
@@ -164,10 +160,10 @@ contract SpellAction {
         // Set the USDC-B debt ceiling
         // USDC_B_LINE is the number of Dai that can be created with USDC token
         // collateral.
-        // ex. a 40 million Dai USDC-B ceiling will be USDC_B_LINE = 40000000
+        // ex. a 60 million Dai USDC-B ceiling will be USDC_B_LINE = 60000000
         //
-        // New Line: 40m
-        uint256 USDC_B_LINE = 40 * MILLION * RAD;
+        // New Line: 60m
+        uint256 USDC_B_LINE = 60 * MILLION * RAD;
         VatAbstract(MCD_VAT).file("USDC-B", "line", USDC_B_LINE);
         totalLine += USDC_B_LINE;
 
@@ -192,7 +188,7 @@ contract DssSpell {
     address constant public FLIPPER_MOM =
         0x9BdDB99625A711bf9bda237044924E34E8570f75;
     address constant public ILK_REGISTRY =
-        0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
     uint256 constant public T2020_10_01_1200UTC = 1601553600;
 

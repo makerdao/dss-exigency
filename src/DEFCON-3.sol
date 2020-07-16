@@ -61,7 +61,7 @@ contract IlkRegistryAbstract {
 contract SpellAction {
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
-    string  constant public description = "DEFCON-3 Emergency Spell";
+    string  constant public description = "DEFCON-2 Emergency Spell";
 
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
@@ -73,10 +73,8 @@ contract SpellAction {
         0x19c0976f590D67707E62397C87829d896Dc0f1F1;
     address constant public MCD_POT =
         0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant public FLIPPER_MOM =
-        0x9BdDB99625A711bf9bda237044924E34E8570f75;
     address constant public ILK_REGISTRY =
-        0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
 
     // Many of the settings that change weekly rely on the rate accumulator
@@ -137,33 +135,15 @@ contract SpellAction {
             //
             (,,, uint256 ilkLine,) = VatAbstract(MCD_VAT).ilks(ilks[i]);
             totalLine += ilkLine;
-
-            // skip the rest of the loop for the following ilks:
-            //
-            if (ilks[i] == "USDC-A" || ilks[i] == "TUSD-A") {
-                continue;
-            }
-
-            // Enable collateral liquidations
-            //
-            // This change will enable liquidations for collateral types
-            // and is colloquially referred to as the "circuit breaker".
-            //
-            // NOTE: We flipped the liquidation breaker off in the schedule(),
-            // waited the GSM delay period, changed system parameters, and are
-            // now re-enabling liquidations.  We are also not re-enabling some
-            // liquidations as they were never enabled.
-            //
-            FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
         }
 
         // Set the USDC-B debt ceiling
         // USDC_B_LINE is the number of Dai that can be created with USDC token
         // collateral.
-        // ex. a 40 million Dai USDC-B ceiling will be USDC_B_LINE = 40000000
+        // ex. a 60 million Dai USDC-B ceiling will be USDC_B_LINE = 60000000
         //
-        // New Line: 40m
-        uint256 USDC_B_LINE = 40 * MILLION * RAD;
+        // New Line: 60m
+        uint256 USDC_B_LINE = 60 * MILLION * RAD;
         VatAbstract(MCD_VAT).file("USDC-B", "line", USDC_B_LINE);
         totalLine += USDC_B_LINE;
 
@@ -185,10 +165,8 @@ contract DssSpell {
 
     address constant public MCD_PAUSE =
         0xbE286431454714F511008713973d3B053A2d38f3;
-    address constant public FLIPPER_MOM =
-        0x9BdDB99625A711bf9bda237044924E34E8570f75;
     address constant public ILK_REGISTRY =
-        0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
     uint256 constant public T2020_10_01_1200UTC = 1601553600;
 
@@ -212,20 +190,6 @@ contract DssSpell {
         require(eta == 0, "This spell has already been scheduled");
         eta = now + pause.delay();
         pause.plot(action, tag, sig, eta);
-
-        // Loop over all ilks
-        //
-        IlkRegistryAbstract registry = IlkRegistryAbstract(ILK_REGISTRY);
-        bytes32[] memory ilks = registry.list();
-
-        for (uint i = 0; i < ilks.length; i++) {
-            // Disable all collateral liquidations
-            //
-            // This change will prevent liquidations across all collateral types
-            // and is colloquially referred to as the circuit breaker.
-            //
-            FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
-        }
     }
 
     function cast() public {

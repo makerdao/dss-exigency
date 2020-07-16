@@ -19,7 +19,7 @@ import "ds-math/math.sol";
 import "ds-test/test.sol";
 import "lib/dss-interfaces/src/Interfaces.sol";
 
-import {DssSpell, SpellAction} from "./DEFCON-3.sol";
+import {DssSpell, SpellAction} from "./DEFCON-2.sol";
 
 contract Hevm { function warp(uint) public; }
 
@@ -75,7 +75,7 @@ contract DssSpellTest is DSTest, DSMath {
     MKRAbstract gov =
          MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
     IlkRegistryAbstract registry =
-        IlkRegistryAbstract(0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef);
+        IlkRegistryAbstract(0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07);
 
     DssSpell spell;
 
@@ -102,7 +102,7 @@ contract DssSpellTest is DSTest, DSMath {
 
         afterSpell = SystemValues({
             dsr: 1000000000000000000000000000,
-            Line: vat.Line() + 30 * MILLION * RAD,
+            Line: vat.Line() + 60 * MILLION * RAD,
             pauseDelay: pause.delay(),
             expiration: T2020_10_01_1200UTC
         });
@@ -112,13 +112,13 @@ contract DssSpellTest is DSTest, DSMath {
         for(uint i = 0; i < ilks.length; i++) {
             (,,, uint256 line,) = vat.ilks(ilks[i]);
             (uint256 duty,) = jug.ilks(ilks[i]);
-            FlipAbstract flip = registry.flip(ilks[i]);
+            FlipAbstract flip = FlipAbstract(registry.flip(ilks[i]));
 
             beforeSpell.collaterals[ilks[i]] = CollateralValues({
                 line: line,
                 duty: duty,
                 tau: flip.tau(),
-                liquidations: 0
+                liquidations: flip.wards(address(cat))
             });
             afterSpell.collaterals[ilks[i]] = CollateralValues({
                 line: line,
@@ -129,8 +129,7 @@ contract DssSpellTest is DSTest, DSMath {
         }
 
         // USDC-B emergency parameters
-        afterSpell.collaterals["USDC-B"].line = 40 * MILLION * RAD;
-        afterSpell.collaterals["USDC-B"].liquidations = 0;
+        afterSpell.collaterals["USDC-B"].line = 60 * MILLION * RAD;
     }
 
     function vote() private {
@@ -220,7 +219,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes32[] memory ilks = registry.list();
 
         for(uint i = 0; i < ilks.length; i++) {
-            // Collateral values
+            // Liquidation values
             checkCollateralValues(ilks[i], beforeSpell);
         }
 

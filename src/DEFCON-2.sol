@@ -74,7 +74,7 @@ contract SpellAction {
     address constant public MCD_POT =
         0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
     address constant public ILK_REGISTRY =
-        0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
 
     // Many of the settings that change weekly rely on the rate accumulator
@@ -144,10 +144,10 @@ contract SpellAction {
         // Set the USDC-B debt ceiling
         // USDC_B_LINE is the number of Dai that can be created with USDC token
         // collateral.
-        // ex. a 40 million Dai USDC-B ceiling will be USDC_B_LINE = 40000000
+        // ex. a 60 million Dai USDC-B ceiling will be USDC_B_LINE = 60000000
         //
-        // New Line: 40m
-        uint256 USDC_B_LINE = 40 * MILLION * RAD;
+        // New Line: 60m
+        uint256 USDC_B_LINE = 60 * MILLION * RAD;
         VatAbstract(MCD_VAT).file("USDC-B", "line", USDC_B_LINE);
         totalLine += USDC_B_LINE;
 
@@ -170,7 +170,7 @@ contract DssSpell {
     address constant public MCD_PAUSE =
         0xbE286431454714F511008713973d3B053A2d38f3;
     address constant public ILK_REGISTRY =
-        0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef;
+        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
     uint256 constant public T2020_10_01_1200UTC = 1601553600;
 
