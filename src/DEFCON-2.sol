@@ -61,20 +61,16 @@ contract IlkRegistryAbstract {
 contract SpellAction {
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
-    string  constant public description = "DEFCON-2 Emergency Spell";
+    string constant public description = "DEFCON-2 Emergency Spell";
 
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.0.8/contracts.json
+    //     https://changelog.makerdao.com/releases/mainnet//contracts.json
     //
-    address constant public MCD_VAT =
-        0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
-    address constant public MCD_JUG =
-        0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    address constant public MCD_POT =
-        0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant public ILK_REGISTRY =
-        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
+    address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
+    address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
+    address constant MCD_POT      = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
+    address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
 
     // Many of the settings that change weekly rely on the rate accumulator
@@ -83,17 +79,15 @@ contract SpellAction {
     //
     // $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
     //
-    uint256 constant public ZERO_PCT_RATE = 1000000000000000000000000000;
+    uint256 constant ZERO_PCT_RATE = 1000000000000000000000000000;
 
     // Common orders of magnitude needed in spells
     //
-    uint256 constant public WAD      = 10**18;
-    uint256 constant public RAY      = 10**27;
-    uint256 constant public RAD      = 10**45;
-    uint256 constant public HUNDRED  = 10**2;
-    uint256 constant public THOUSAND = 10**3;
-    uint256 constant public MILLION  = 10**6;
-    uint256 constant public BILLION  = 10**9;
+    uint256 constant WAD      = 10**18;
+    uint256 constant RAY      = 10**27;
+    uint256 constant RAD      = 10**45;
+    uint256 constant MLN = 10**6;
+    uint256 constant BLN = 10**9;
 
     function execute() external {
         uint256 totalLine = 0;
@@ -146,8 +140,9 @@ contract SpellAction {
         // collateral.
         // ex. a 60 million Dai USDC-B ceiling will be USDC_B_LINE = 60000000
         //
-        // New Line: 60m
-        uint256 USDC_B_LINE = 60 * MILLION * RAD;
+        // New Line: +50m
+        (,,, uint256 ilkLine,) = VatAbstract(MCD_VAT).ilks("USDC-B");
+        uint256 USDC_B_LINE = ilkLine + (50 * MLN * RAD);
         VatAbstract(MCD_VAT).file("USDC-B", "line", USDC_B_LINE);
         totalLine += USDC_B_LINE;
 
@@ -167,12 +162,10 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    address constant public MCD_PAUSE =
-        0xbE286431454714F511008713973d3B053A2d38f3;
-    address constant public ILK_REGISTRY =
-        0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
+    address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
+    address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
 
-    uint256 constant public T2020_10_01_1200UTC = 1601553600;
+    uint256 constant T2020_10_01_1200UTC = 1601553600;
 
     constructor() public {
         sig = abi.encodeWithSignature("execute()");

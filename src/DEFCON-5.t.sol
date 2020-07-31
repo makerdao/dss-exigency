@@ -19,7 +19,7 @@ import "ds-math/math.sol";
 import "ds-test/test.sol";
 import "lib/dss-interfaces/src/Interfaces.sol";
 
-import {DssSpell, SpellAction} from "./DEFCON-3.sol";
+import {DssSpell, SpellAction} from "./DEFCON-5.sol";
 
 contract Hevm {
     function warp(uint256) public;
@@ -102,8 +102,8 @@ contract DssSpellTest is DSTest, DSMath {
         });
 
         afterSpell = SystemValues({
-            dsr: 1000000000000000000000000000,
-            Line: vat.Line() + (50 * MLN * RAD),
+            dsr: pot.dsr(),
+            Line: vat.Line(),
             pauseDelay: pause.delay(),
             expiration: T2020_10_01_1200UTC
         });
@@ -124,18 +124,15 @@ contract DssSpellTest is DSTest, DSMath {
 
             afterSpell.collaterals[ilks[i]] = CollateralValues({
                 line: line,
-                duty: 1000000000000000000000000000,
+                duty: duty,
                 tau: flip.tau(),
-                liquidations: flip.wards(address(cat))
+                liquidations: 1
             });
-
-            if (ilks[i] == "USDC-B") {
-                // USDC-B emergency parameters
-                afterSpell.collaterals["USDC-B"].line =
-                    line + (50 * MLN * RAD);
-                afterSpell.collaterals["USDC-B"].duty = duty;
-            }
         }
+
+        afterSpell.collaterals["USDC-A"].liquidations = 0;
+        afterSpell.collaterals["USDC-B"].liquidations = 0;
+        afterSpell.collaterals["TUSD-A"].liquidations = 0;
     }
 
     function vote() private {

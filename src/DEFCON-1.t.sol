@@ -21,7 +21,10 @@ import "lib/dss-interfaces/src/Interfaces.sol";
 
 import {DssSpell, SpellAction} from "./DEFCON-1.sol";
 
-contract Hevm { function warp(uint) public; }
+contract Hevm {
+    function warp(uint256) public;
+    function store(address,bytes32,bytes32) public;
+}
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
@@ -31,13 +34,11 @@ contract DssSpellTest is DSTest, DSMath {
 
     // Common orders of magnitude needed in spells
     //
-    uint256 constant public WAD      = 10**18;
-    uint256 constant public RAY      = 10**27;
-    uint256 constant public RAD      = 10**45;
-    uint256 constant public HUNDRED  = 10**2;
-    uint256 constant public THOUSAND = 10**3;
-    uint256 constant public MILLION  = 10**6;
-    uint256 constant public BILLION  = 10**9;
+    uint256 constant public WAD = 10**18;
+    uint256 constant public RAY = 10**27;
+    uint256 constant public RAD = 10**45;
+    uint256 constant public MLN = 10**6;
+    uint256 constant public BLN = 10**9;
 
 
     struct CollateralValues {
@@ -100,11 +101,9 @@ contract DssSpellTest is DSTest, DSMath {
             expiration: T2020_10_01_1200UTC
         });
 
-        (,,, uint256 lineUSDCB,) = vat.ilks('USDC-B');
-
         afterSpell = SystemValues({
             dsr: 1000000000000000000000000000,
-            Line: (vat.Line() + 60 * MILLION * RAD) - lineUSDCB,
+            Line: vat.Line() + (50 * MLN * RAD),
             pauseDelay: pause.delay(),
             expiration: T2020_10_01_1200UTC
         });
@@ -127,12 +126,13 @@ contract DssSpellTest is DSTest, DSMath {
                 line: line,
                 duty: 1000000000000000000000000000,
                 tau: flip.tau(),
-                liquidations: flip.wards(address(cat))
+                liquidations: 0
             });
 
             if (ilks[i] == "USDC-B") {
                 // USDC-B emergency parameters
-                afterSpell.collaterals["USDC-B"].line = 60 * MILLION * RAD;
+                afterSpell.collaterals["USDC-B"].line =
+                    line + (50 * MLN * RAD);
                 afterSpell.collaterals["USDC-B"].liquidations = 0;
                 afterSpell.collaterals["USDC-B"].duty = duty;
             }
@@ -141,6 +141,12 @@ contract DssSpellTest is DSTest, DSMath {
 
     function vote() private {
         if (chief.hat() != address(spell)) {
+            hevm.store(
+                address(gov),
+                keccak256(abi.encode(address(this), uint256(1))),
+                bytes32(uint256(999999999999 ether))
+            );
+
             gov.approve(address(chief), uint256(-1));
             chief.lock(sub(gov.balanceOf(address(this)), 1 ether));
 

@@ -61,7 +61,7 @@ contract IlkRegistryAbstract {
 contract SpellAction {
     // Provides a descriptive tag for bot consumption
     // This should be modified weekly to provide a summary of the actions
-    string constant public description = "DEFCON-1 Emergency Spell";
+    string constant public description = "DEFCON-5 Emergency Spell";
 
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
@@ -70,9 +70,8 @@ contract SpellAction {
     address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
     address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
     address constant MCD_POT      = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant FLIPPER_MOM  = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
     address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
-
+    address constant FLIPPER_MOM  = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
     // Many of the settings that change weekly rely on the rate accumulator
     // described at https://docs.makerdao.com/smart-contract-modules/rates-module
@@ -91,20 +90,11 @@ contract SpellAction {
     uint256 constant BLN = 10**9;
 
     function execute() external {
-        uint256 totalLine = 0;
-
         // MCD Modifications
 
         // Ensure we drip pot prior to modifications (housekeeping).
         //
         PotAbstract(MCD_POT).drip();
-
-        // Set the Dai Savings Rate
-        // DSR_RATE is a value determined by the rate accumulator calculation
-        // ex. an 8% annual rate will be 1000000002440418608258400030
-        //
-        uint256 DSR_RATE = ZERO_PCT_RATE;
-        PotAbstract(MCD_POT).file("dsr", DSR_RATE);
 
         // Loop over all ilks
         //
@@ -118,34 +108,18 @@ contract SpellAction {
 
             // skip the rest of the loop for the following ilks:
             //
-            if (ilks[i] == "USDC-B") {
-                continue;
-            }
+            if (ilks[i] == "USDC-A" ||
+                ilks[i] == "USDC-B" ||
+                ilks[i] == "TUSD-A"
+            ) { continue; }
 
-            // Set the ilk stability fee
+            // Enable collateral liquidations
             //
-            JugAbstract(MCD_JUG).file(ilks[i], "duty", ZERO_PCT_RATE);
-
-            // Keep a running total of all ilk Debt Ceilings
+            // This change will enable liquidations for collateral types
+            // and is colloquially referred to as the "circuit breaker".
             //
-            (,,, uint256 ilkLine,) = VatAbstract(MCD_VAT).ilks(ilks[i]);
-            totalLine += ilkLine;
+            FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
         }
-
-        // Set the USDC-B debt ceiling
-        // USDC_B_LINE is the number of Dai that can be created with USDC token
-        // collateral.
-        // ex. a 60 million Dai USDC-B ceiling will be USDC_B_LINE = 60000000
-        //
-        // New Line: +50m
-        (,,, uint256 ilkLine,) = VatAbstract(MCD_VAT).ilks("USDC-B");
-        uint256 USDC_B_LINE = ilkLine + (50 * MLN * RAD);
-        VatAbstract(MCD_VAT).file("USDC-B", "line", USDC_B_LINE);
-        totalLine += USDC_B_LINE;
-
-        // Set the Global Debt Ceiling to the sum of all ilk line
-        //
-        VatAbstract(MCD_VAT).file("Line", totalLine);
     }
 }
 
@@ -161,7 +135,6 @@ contract DssSpell {
 
     address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
     address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
-    address constant FLIPPER_MOM  = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
 
     uint256 constant T2020_10_01_1200UTC = 1601553600;
 
@@ -185,20 +158,6 @@ contract DssSpell {
         require(eta == 0, "This spell has already been scheduled");
         eta = now + pause.delay();
         pause.plot(action, tag, sig, eta);
-
-        // Loop over all ilks
-        //
-        IlkRegistryAbstract registry = IlkRegistryAbstract(ILK_REGISTRY);
-        bytes32[] memory ilks = registry.list();
-
-        for (uint i = 0; i < ilks.length; i++) {
-            // Disable all collateral liquidations
-            //
-            // This change will prevent liquidations across all collateral types
-            // and is colloquially referred to as the circuit breaker.
-            //
-            FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
-        }
     }
 
     function cast() public {
