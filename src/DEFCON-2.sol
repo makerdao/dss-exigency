@@ -60,7 +60,6 @@ contract IlkRegistryAbstract {
 
 contract SpellAction {
     // Provides a descriptive tag for bot consumption
-    // This should be modified weekly to provide a summary of the actions
     string constant public description = "DEFCON-2 Emergency Spell";
 
     // The contracts in this list should correspond to MCD core contracts, verify
