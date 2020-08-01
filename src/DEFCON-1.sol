@@ -103,8 +103,7 @@ contract SpellAction {
         // DSR_RATE is a value determined by the rate accumulator calculation
         // ex. an 8% annual rate will be 1000000002440418608258400030
         //
-        uint256 DSR_RATE = ZERO_PCT_RATE;
-        PotAbstract(MCD_POT).file("dsr", DSR_RATE);
+        PotAbstract(MCD_POT).file("dsr", ZERO_PCT_RATE);
 
         // Loop over all ilks
         //
