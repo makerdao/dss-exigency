@@ -82,9 +82,9 @@ contract SpellAction {
 
     // Common orders of magnitude needed in spells
     //
-    uint256 constant WAD      = 10**18;
-    uint256 constant RAY      = 10**27;
-    uint256 constant RAD      = 10**45;
+    uint256 constant WAD = 10**18;
+    uint256 constant RAY = 10**27;
+    uint256 constant RAD = 10**45;
     uint256 constant MLN = 10**6;
     uint256 constant BLN = 10**9;
 
