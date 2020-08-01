@@ -60,12 +60,11 @@ contract IlkRegistryAbstract {
 
 contract SpellAction {
     // Provides a descriptive tag for bot consumption
-    // This should be modified weekly to provide a summary of the actions
     string constant public description = "DEFCON-2 Emergency Spell";
 
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet//contracts.json
+    //     https://changelog.makerdao.com/releases/mainnet/1.0.9/contracts.json
     //
     address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
     address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
@@ -83,9 +82,9 @@ contract SpellAction {
 
     // Common orders of magnitude needed in spells
     //
-    uint256 constant WAD      = 10**18;
-    uint256 constant RAY      = 10**27;
-    uint256 constant RAD      = 10**45;
+    uint256 constant WAD = 10**18;
+    uint256 constant RAY = 10**27;
+    uint256 constant RAD = 10**45;
     uint256 constant MLN = 10**6;
     uint256 constant BLN = 10**9;
 
