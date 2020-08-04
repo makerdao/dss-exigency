@@ -21,23 +21,37 @@ import "lib/dss-interfaces/src/Interfaces.sol";
 
 import {DssSpell, SpellAction} from "./DEFCON-5.sol";
 
-contract Hevm { function warp(uint) public; }
+contract Hevm {
+    function warp(uint256) public;
+    function store(address,bytes32,bytes32) public;
+}
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = 0xA8692c55aAb501dA3931DF536aD4325F5aF4a75D;
+    address constant MAINNET_SPELL = address(
+        0x69EC6020BA47BE01557605b53a5d56e6fD96ED8c
+    );
 
-    uint256 constant MILLION = 10**6;
+    // Common orders of magnitude needed in spells
+    //
+    uint256 constant public WAD = 10**18;
+    uint256 constant public RAY = 10**27;
+    uint256 constant public RAD = 10**45;
+    uint256 constant public MLN = 10**6;
+    uint256 constant public BLN = 10**9;
+
 
     struct CollateralValues {
         uint256 line;
         uint256 duty;
-        uint256 pct;
         uint48  tau;
         uint256 liquidations;
     }
 
     struct SystemValues {
+        uint256 dsr;
+        uint256 Line;
+        uint256 pauseDelay;
         uint256 expiration;
         mapping (bytes32 => CollateralValues) collaterals;
     }
@@ -59,37 +73,10 @@ contract DssSpellTest is DSTest, DSMath {
          PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
     JugAbstract jug =
          JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
-    SpotAbstract spot =
-         SpotAbstract(0x65C79fcB50Ca1594B025960e539eD7A9a6D434A3);
     MKRAbstract gov =
          MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
-    SaiTubAbstract tub =
-         SaiTubAbstract(0x448a5065aeBB8E423F0896E6c5D525C040f59af3);
-    FlipAbstract eFlip =
-         FlipAbstract(0xd8a04F5412223F513DC55F839574430f5EC15531);
-    FlipAbstract bFlip =
-         FlipAbstract(0xaA745404d55f88C108A28c86abE7b5A1E7817c07);
-    FlipAbstract uFlip =
-         FlipAbstract(0xE6ed1d09a19Bd335f051d78D5d22dF3bfF2c28B1);
-    FlipAbstract wFlip =
-         FlipAbstract(0x3E115d85D4d7253b05fEc9C0bB5b08383C2b0603);
-    SaiTopAbstract top =
-         SaiTopAbstract(0x9b0ccf7C8994E19F39b2B4CF708e0A7DF65fA8a3);
-    EndAbstract end =
-         EndAbstract(0xaB14d3CE3F733CACB76eC2AbE7d2fcb00c99F3d5);
-    GemAbstract wbtc =
-         GemAbstract(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
-    GemJoinAbstract wJoin =
-         GemJoinAbstract(0xBF72Da2Bd84c5170618Fbe5914B0ECA9638d5eb5);
-    OsmAbstract wPip =
-         OsmAbstract(0xf185d0682d50819263941e5f4EacC763CC5C6C42);
-    address flipperMom =
-         address(0x9BdDB99625A711bf9bda237044924E34E8570f75);
-    address osmMom =
-         address(0x76416A4d5190d071bfed309861527431304aA14f);
-    address pauseProxy =
-         address(0xBE8E3e3618f7474F8cB1d074A26afFef007E98FB);
-
+    IlkRegistryAbstract registry =
+        IlkRegistryAbstract(0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07);
 
     DssSpell spell;
 
@@ -97,36 +84,8 @@ contract DssSpellTest is DSTest, DSMath {
     bytes20 constant CHEAT_CODE =
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
-    // not provided in DSMath
-    uint constant RAD = 10 ** 45;
-    function rpow(uint x, uint n, uint b) internal pure returns (uint z) {
-      assembly {
-        switch x case 0 {switch n case 0 {z := b} default {z := 0}}
-        default {
-          switch mod(n, 2) case 0 { z := b } default { z := x }
-          let half := div(b, 2)  // for rounding.
-          for { n := div(n, 2) } n { n := div(n,2) } {
-            let xx := mul(x, x)
-            if iszero(eq(div(xx, x), x)) { revert(0,0) }
-            let xxRound := add(xx, half)
-            if lt(xxRound, xx) { revert(0,0) }
-            x := div(xxRound, b)
-            if mod(n,2) {
-              let zx := mul(z, x)
-              if and(iszero(iszero(x)), iszero(eq(div(zx, x), z))) { revert(0,0) }
-              let zxRound := add(zx, half)
-              if lt(zxRound, zx) { revert(0,0) }
-              z := div(zxRound, b)
-            }
-          }
-        }
-      }
-    }
-    // 10^-5 (tenth of a basis point) as a RAY
-    uint256 TOLERANCE = 10 ** 22;
-
     // expiration time for this DEFCON spell
-    uint256 constant public T2020_07_01_1200UTC = 1593604800;
+    uint256 constant public T2020_10_01_1200UTC = 1601553600;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
@@ -136,56 +95,54 @@ contract DssSpellTest is DSTest, DSMath {
 
         // beforeSpell is only used to check liquidations
         beforeSpell = SystemValues({
-            expiration: T2020_07_01_1200UTC
+            dsr: pot.dsr(),
+            Line: vat.Line(),
+            pauseDelay: pause.delay(),
+            expiration: T2020_10_01_1200UTC
         });
 
         afterSpell = SystemValues({
-            expiration: T2020_07_01_1200UTC
+            dsr: pot.dsr(),
+            Line: vat.Line(),
+            pauseDelay: pause.delay(),
+            expiration: T2020_10_01_1200UTC
         });
 
-        bytes32[3] memory ilks = [
-            bytes32("ETH-A"),
-            bytes32("BAT-A"),
-            bytes32("WBTC-A")
-        ];
+        bytes32[] memory ilks = registry.list();
 
         for(uint i = 0; i < ilks.length; i++) {
             (,,, uint256 line,) = vat.ilks(ilks[i]);
+            (uint256 duty,) = jug.ilks(ilks[i]);
+            FlipAbstract flip = FlipAbstract(registry.flip(ilks[i]));
+
             beforeSpell.collaterals[ilks[i]] = CollateralValues({
-                line: line,                            // not tested
-                duty: 1000000000000000000000000000,    // not tested
-                pct: 0 * 1000,                         // not tested
-                tau: 24 hours,                         // not tested
-                liquidations: 1
+                line: line,
+                duty: duty,
+                tau: flip.tau(),
+                liquidations: flip.wards(address(cat))
             });
+
             afterSpell.collaterals[ilks[i]] = CollateralValues({
-                line: line,                            // not tested
-                duty: 1000000000000000000000000000,
-                pct: 0 * 1000,
-                tau: 24 hours,                         // not tested
+                line: line,
+                duty: duty,
+                tau: flip.tau(),
                 liquidations: 1
             });
         }
 
-        // USDC-A emergency parameters
-        beforeSpell.collaterals["USDC-A"] = CollateralValues({
-            line: 40 * MILLION * RAD,                  // not tested
-            duty: 1000000012857214317438491659,        // not tested
-            pct: 50 * 1000,                            // not tested
-            tau: 24 hours,                             // not tested
-            liquidations: 0
-        });
-        afterSpell.collaterals["USDC-A"] = CollateralValues({
-            line: 40 * MILLION * RAD,                  // not tested
-            duty: 1000000012857214317438491659,        // not tested
-            pct: 50 * 1000,                            // not tested
-            tau: 24 hours,                             // not tested
-            liquidations: 0
-        });
+        afterSpell.collaterals["USDC-A"].liquidations = 0;
+        afterSpell.collaterals["USDC-B"].liquidations = 0;
+        afterSpell.collaterals["TUSD-A"].liquidations = 0;
     }
 
     function vote() private {
         if (chief.hat() != address(spell)) {
+            hevm.store(
+                address(gov),
+                keccak256(abi.encode(address(this), uint256(1))),
+                bytes32(uint256(999999999999 ether))
+            );
+
             gov.approve(address(chief), uint256(-1));
             chief.lock(sub(gov.balanceOf(address(this)), 1 ether));
 
@@ -223,83 +180,67 @@ contract DssSpellTest is DSTest, DSMath {
         }
     }
 
-    function yearlyYield(uint256 duty) public pure returns (uint256) {
-        return rpow(duty, (365 * 24 * 60 *60), RAY);
-    }
-
-    function expectedRate(uint256 percentValue) public pure returns (uint256) {
-        return (100000 + percentValue) * (10 ** 22);
-    }
-
-    function diffCalc(
-        uint256 expectedRate_,
-        uint256 yearlyYield_
-    ) public pure returns (uint256) {
-        return (expectedRate_ > yearlyYield_) ?
-            expectedRate_ - yearlyYield_ : yearlyYield_ - expectedRate_;
-    }
-
     function checkSpellValues(SystemValues storage values) internal {
         // Test description
         string memory description = new SpellAction().description();
         assertTrue(bytes(description).length > 0);
+
         // DS-Test can't handle strings directly, so cast to a bytes32.
         assertEq(stringToBytes32(spell.description()),
             stringToBytes32(description));
 
         // Test expiration
         assertEq(spell.expiration(), values.expiration);
-    }
 
-    function checkLiquidationValues(
-        bytes32 ilk,
-        FlipAbstract flip,
-        SystemValues storage values
-    ) internal {
-        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
+        // dsr
+        assertEq(pot.dsr(), values.dsr);
+
+        // Line
+        assertEq(vat.Line(), values.Line);
+
+        // Pause delay
+        assertEq(pause.delay(), values.pauseDelay);
     }
 
     function checkCollateralValues(
         bytes32 ilk,
-        FlipAbstract flip,
         SystemValues storage values
     ) internal {
-        (uint duty,)  = jug.ilks(ilk);
+        FlipAbstract flip = FlipAbstract(registry.flip(ilk));
+
+        (uint256 duty,) = jug.ilks(ilk);
         assertEq(duty, values.collaterals[ilk].duty);
-        assertTrue(diffCalc(
-            expectedRate(values.collaterals[ilk].pct),
-            yearlyYield(values.collaterals[ilk].duty)
-        ) <= TOLERANCE);
 
-        // (,,, uint256 line,) = vat.ilks(ilk);
-        // assertEq(line, values.collaterals[ilk].line);
+        (,,, uint256 line,) = vat.ilks(ilk);
+        assertEq(line, values.collaterals[ilk].line);
 
-        // assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
-        checkLiquidationValues(ilk, flip, values);
+        assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
+        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
     }
 
     function testSpellIsCast() public {
         vote();
         schedule();
 
-        // Liquidation values
-        checkLiquidationValues("ETH-A",  eFlip, beforeSpell);
-        checkLiquidationValues("BAT-A",  bFlip, beforeSpell);
-        checkLiquidationValues("USDC-A", uFlip, beforeSpell);
-        checkLiquidationValues("WBTC-A", wFlip, beforeSpell);
+        // General System values before spell
+        checkSpellValues(beforeSpell);
+
+        bytes32[] memory ilks = registry.list();
+
+        for(uint i = 0; i < ilks.length; i++) {
+            // Liquidation values
+            checkCollateralValues(ilks[i], beforeSpell);
+        }
 
         waitAndCast();
         assertTrue(spell.done());
 
-        // General System values
+        // General System values after spell
         checkSpellValues(afterSpell);
 
-        // Collateral values
-        checkCollateralValues("ETH-A",  eFlip, afterSpell);
-        checkCollateralValues("BAT-A",  bFlip, afterSpell);
-        checkCollateralValues("WBTC-A", wFlip, afterSpell);
-
-        // Liquidation values
-        checkLiquidationValues("USDC-A", uFlip, afterSpell);
+        for(uint i = 0; i < ilks.length; i++) {
+            // Collateral values
+            checkCollateralValues(ilks[i], afterSpell);
+        }
     }
 }
