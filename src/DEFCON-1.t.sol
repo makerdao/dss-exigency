@@ -222,7 +222,7 @@ contract DssSpellTest is DSTest, DSMath {
         assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
     }
 
-    function testSpellIsCast() public {
+    function testDEFCON1() public {
         vote();
         schedule();
 
