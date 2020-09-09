@@ -42,7 +42,7 @@ contract IlkRegistryAbstract {
 contract SpellAction {
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.1.0/contracts.json
+    //     https://changelog.makerdao.com/releases/mainnet/1.1.1/contracts.json
     //
     address constant MCD_VAT = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
 
