@@ -22,28 +22,9 @@ contract DSPauseAbstract {
     function exec(address, bytes32, bytes memory, uint256) public returns (bytes memory);
 }
 
-// https://github.com/makerdao/dss/blob/master/src/pot.sol
-contract PotAbstract {
-    function file(bytes32, uint256) external;
-    function drip() external returns (uint256);
-}
-
-// https://github.com/makerdao/dss/blob/master/src/jug.sol
-contract JugAbstract {
-    function file(bytes32, bytes32, uint256) external;
-    function drip(bytes32) external returns (uint256);
-}
-
 // https://github.com/makerdao/dss/blob/master/src/vat.sol
 contract VatAbstract {
-    function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256);
-    function file(bytes32, uint256) external;
-    function file(bytes32, bytes32, uint256) external;
-}
-
-// https://github.com/makerdao/dss/blob/master/src/flip.sol
-contract FlipAbstract {
-    function file(bytes32, uint256) external;
+    function wards(address) external view returns (uint256);
 }
 
 // https://github.com/makerdao/flipper-mom/blob/master/src/FlipperMom.sol
@@ -59,27 +40,11 @@ contract IlkRegistryAbstract {
 }
 
 contract SpellAction {
-    // Provides a descriptive tag for bot consumption
-    // This should be modified weekly to provide a summary of the actions
-    string constant public description = "DEFCON-5 Emergency Spell";
-
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.0.9/contracts.json
+    //     https://changelog.makerdao.com/releases/mainnet/1.1.0/contracts.json
     //
-    address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
-    address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    address constant MCD_POT      = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
-    address constant FLIPPER_MOM  = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
-
-    // Many of the settings that change weekly rely on the rate accumulator
-    // described at https://docs.makerdao.com/smart-contract-modules/rates-module
-    // To check this yourself, use the following rate calculation (example 8%):
-    //
-    // $ bc -l <<< 'scale=27; e( l(1.08)/(60 * 60 * 24 * 365) )'
-    //
-    uint256 constant ZERO_PCT_RATE = 1000000000000000000000000000;
+    address constant MCD_VAT = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
 
     // Common orders of magnitude needed in spells
     //
@@ -90,41 +55,11 @@ contract SpellAction {
     uint256 constant BLN = 10**9;
 
     function execute() external {
-        // MCD Modifications
-
-        // Ensure we drip pot prior to modifications (housekeeping).
-        //
-        PotAbstract(MCD_POT).drip();
-
-        // Loop over all ilks
-        //
-        IlkRegistryAbstract registry = IlkRegistryAbstract(ILK_REGISTRY);
-        bytes32[] memory ilks = registry.list();
-
-        for (uint i = 0; i < ilks.length; i++) {
-            // Always drip the ilk prior to modifications (housekeeping)
-            //
-            JugAbstract(MCD_JUG).drip(ilks[i]);
-
-            // skip the rest of the loop for the following ilks:
-            //
-            if (ilks[i] == "USDC-A" ||
-                ilks[i] == "USDC-B" ||
-                ilks[i] == "TUSD-A"
-            ) { continue; }
-
-            // Enable collateral liquidations
-            //
-            // This change will enable liquidations for collateral types
-            // and is colloquially referred to as the "circuit breaker".
-            //
-            FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
-        }
+        require(VatAbstract(MCD_VAT).wards(address(this)) == 1, "no-access");
     }
 }
 
 contract DssSpell {
-
     DSPauseAbstract  public pause;
     address          public action;
     bytes32          public tag;
@@ -134,9 +69,13 @@ contract DssSpell {
     bool             public done;
 
     address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
-    address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
+    address constant FLIPPER_MOM  = 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472;
+    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
 
-    uint256 constant T2020_10_01_1200UTC = 1601553600;
+    uint256 constant T2021_02_01_1200UTC = 1612180800;
+
+    // Provides a descriptive tag for bot consumption
+    string constant public description = "DEFCON-5 Emergency Spell";
 
     constructor() public {
         sig = abi.encodeWithSignature("execute()");
@@ -146,11 +85,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2020_10_01_1200UTC;
-    }
-
-    function description() public view returns (string memory) {
-        return SpellAction(action).description();
+        expiration = T2021_02_01_1200UTC;
     }
 
     function schedule() public {
@@ -158,6 +93,28 @@ contract DssSpell {
         require(eta == 0, "This spell has already been scheduled");
         eta = now + pause.delay();
         pause.plot(action, tag, sig, eta);
+
+        // Loop over all ilks
+        //
+        IlkRegistryAbstract registry = IlkRegistryAbstract(ILK_REGISTRY);
+        bytes32[] memory ilks = registry.list();
+
+        for (uint i = 0; i < ilks.length; i++) {
+            // skip the rest of the loop for the following ilks:
+            //
+            if (ilks[i] == "USDC-A" ||
+                ilks[i] == "USDC-B" ||
+                ilks[i] == "TUSD-A" ||
+                ilks[i] == "PAXUSD-A"
+            ) { continue; }
+
+            // Enable collateral liquidations
+            //
+            // This change will enable liquidations for collateral types
+            // and is colloquially referred to as the "circuit breaker".
+            //
+            FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
+        }
     }
 
     function cast() public {
