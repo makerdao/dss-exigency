@@ -29,7 +29,7 @@ contract Hevm {
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
     address constant MAINNET_SPELL = address(
-        0x7852BbeADd2498889ED680EAAc849633DB7422D9
+        0xF5F016fD2ba03FcD6f56199327D4E28AC4923E6C
     );
 
     // Common orders of magnitude needed in spells
@@ -68,7 +68,7 @@ contract DssSpellTest is DSTest, DSMath {
     VatAbstract vat =
          VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     CatAbstract cat =
-         CatAbstract(0x78F2c2AF65126834c51822F56Be0d7469D7A523E);
+         CatAbstract(0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
     PotAbstract pot =
          PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
     JugAbstract jug =
@@ -76,7 +76,7 @@ contract DssSpellTest is DSTest, DSMath {
     MKRAbstract gov =
          MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
     IlkRegistryAbstract registry =
-        IlkRegistryAbstract(0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07);
+        IlkRegistryAbstract(0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24);
 
     DssSpell spell;
 
@@ -85,7 +85,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     // expiration time for this DEFCON spell
-    uint256 constant public T2020_10_01_1200UTC = 1601553600;
+    uint256 constant public T2021_02_01_1200UTC = 1612180800;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
@@ -98,14 +98,14 @@ contract DssSpellTest is DSTest, DSMath {
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2020_10_01_1200UTC
+            expiration: T2021_02_01_1200UTC
         });
 
         afterSpell = SystemValues({
             dsr: 1000000000000000000000000000,
             Line: vat.Line() + (50 * MLN * RAD),
             pauseDelay: pause.delay(),
-            expiration: T2020_10_01_1200UTC
+            expiration: T2021_02_01_1200UTC
         });
 
         bytes32[] memory ilks = registry.list();
@@ -186,12 +186,7 @@ contract DssSpellTest is DSTest, DSMath {
 
     function checkSpellValues(SystemValues storage values) internal {
         // Test description
-        string memory description = new SpellAction().description();
-        assertTrue(bytes(description).length > 0);
-
-        // DS-Test can't handle strings directly, so cast to a bytes32.
-        assertEq(stringToBytes32(spell.description()),
-            stringToBytes32(description));
+        assertTrue(bytes(spell.description()).length > 0);
 
         // Test expiration
         assertEq(spell.expiration(), values.expiration);

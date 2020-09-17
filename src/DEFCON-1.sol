@@ -59,19 +59,15 @@ contract IlkRegistryAbstract {
 }
 
 contract SpellAction {
-    // Provides a descriptive tag for bot consumption
-    // This should be modified weekly to provide a summary of the actions
-    string constant public description = "DEFCON-1 Emergency Spell";
-
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.0.9/contracts.json
+    //     https://changelog.makerdao.com/releases/mainnet/1.1.1/contracts.json
     //
     address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
     address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
     address constant MCD_POT      = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant FLIPPER_MOM  = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
-    address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
+    address constant FLIPPER_MOM  = 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472;
+    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
 
 
     // Many of the settings that change weekly rely on the rate accumulator
@@ -111,15 +107,15 @@ contract SpellAction {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
-            // Always drip the ilk prior to modifications (housekeeping)
-            //
-            JugAbstract(MCD_JUG).drip(ilks[i]);
-
             // skip the rest of the loop for the following ilks:
             //
             if (ilks[i] == "USDC-B") {
                 continue;
             }
+
+            // Always drip the ilk prior to modifications (housekeeping)
+            //
+            JugAbstract(MCD_JUG).drip(ilks[i]);
 
             // Set the ilk stability fee
             //
@@ -159,10 +155,13 @@ contract DssSpell {
     bool             public done;
 
     address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
-    address constant ILK_REGISTRY = 0xbE4F921cdFEf2cF5080F9Cf00CC2c14F1F96Bd07;
-    address constant FLIPPER_MOM  = 0x9BdDB99625A711bf9bda237044924E34E8570f75;
+    address constant FLIPPER_MOM  = 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472;
+    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
 
-    uint256 constant T2020_10_01_1200UTC = 1601553600;
+    uint256 constant T2021_02_01_1200UTC = 1612180800;
+
+    // Provides a descriptive tag for bot consumption
+    string constant public description = "DEFCON-1 Emergency Spell";
 
     constructor() public {
         sig = abi.encodeWithSignature("execute()");
@@ -172,11 +171,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2020_10_01_1200UTC;
-    }
-
-    function description() public view returns (string memory) {
-        return SpellAction(action).description();
+        expiration = T2021_02_01_1200UTC;
     }
 
     function schedule() public {
