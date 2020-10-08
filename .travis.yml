@@ -11,6 +11,6 @@ script:
 notifications:
   webhooks:
     urls:
-      - $WEBHOOK
+      - secure: "cnqiZELv/jP+Deo3k4ewcMk+2AD1maSlg8x6eMBdvdZ4n3YWN17h5GvprzyWYR/J4ti754l0BF5yYsu7Q/dvbEUlzk7vIzDHiOqhk8qNmR89V/7LYs4XzY5J3DmKucblmqAYZCOZKFTXGKhc9QzrIAD442JKjv450MmTVh1q1GHsTuPYh5pPCrNtFNvVbk4hs59WqNWWHV91w3UiEaodEYTNwSkCvtKaKc+BTfSlnU9gKjvTKAYFr77zN128z6/saDzRmfxXNMR1guJqb9GKbKYOowvPK6mCBDMywrlyLvgh+yBVeV1Jt4+YaO76nfT2BO9wb8MaP37Zahj95xsmSqOsPP8ht3mFXQTXE2/5Bjvy7ZXHEjlDbYf1q15H0GnX2mHtXDf3muAAQuCGXeox8e6qk0FvyWHFYEDlwDr4CL+EjcObMGJtmSVM19CAXGGUYnNdCJbftphHZ5z0ogShV8LadYoX7jxj8sdQXokW1LX4az9+jZ2tTrkmoxbwDTjfLR2OhZ1rQ0F7NWDWAKsTnJrlly2IquYqB/M8Kl4NwLv8XAe/DPn4WH2CDnFfB4zkAhIOjh36oeJ1ogCnXXFuPlCXvG94r3i0TQqyyh07Upp5sizpJ8XlJuz9VHBCENusMFpD3vf8DI8X/3k6SvpvlJ7FlHebBzwOt1Ryf9Wtg4g="
     on_success: always
     on_failure: always
