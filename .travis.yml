@@ -11,6 +11,6 @@ script:
 notifications:
   webhooks:
     urls:
-      - https://chat.makerdao.com/hooks/rz6XmPk8coTQdbkQr/oWRchpxDBGyP8QhPFg23CQDttTbAJMGKTneexL6JZ7FebaM9
+      - $WEBHOOK
     on_success: always
     on_failure: always
