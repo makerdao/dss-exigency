@@ -64,7 +64,7 @@ contract DssSpellTest is DSTest, DSMath {
     DSPauseAbstract pause =
         DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
     DSChiefAbstract chief =
-         DSChiefAbstract(0x9eF05f7F6deB616fd37aC3c959a2dDD25A54E4F5);
+         DSChiefAbstract(0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
     VatAbstract vat =
          VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     CatAbstract cat =

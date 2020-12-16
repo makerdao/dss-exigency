@@ -105,7 +105,8 @@ contract DssSpell {
             if (ilks[i] == "USDC-A" ||
                 ilks[i] == "USDC-B" ||
                 ilks[i] == "TUSD-A" ||
-                ilks[i] == "PAXUSD-A"
+                ilks[i] == "PAXUSD-A" ||
+                ilks[i] == "GUSD-A"
             ) { continue; }
 
             // Enable collateral liquidations
