@@ -102,11 +102,12 @@ contract DssSpell {
         for (uint i = 0; i < ilks.length; i++) {
             // skip the rest of the loop for the following ilks:
             //
-            if (ilks[i] == "USDC-A" ||
-                ilks[i] == "USDC-B" ||
-                ilks[i] == "TUSD-A" ||
+            if (ilks[i] == "USDC-A"   ||
+                ilks[i] == "USDC-B"   ||
+                ilks[i] == "TUSD-A"   ||
                 ilks[i] == "PAXUSD-A" ||
-                ilks[i] == "GUSD-A"
+                ilks[i] == "GUSD-A"   ||
+                ilks[i] == 0x50534d2d555344432d4100000000000000000000000000000000000000000000
             ) { continue; }
 
             // Enable collateral liquidations

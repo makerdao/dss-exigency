@@ -28,9 +28,7 @@ contract Hevm {
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(
-        0x02Fc38369890Aff2EC94B28863AE0DacdB2Dbae3
-    );
+    address constant MAINNET_SPELL = address(0);
 
     // Common orders of magnitude needed in spells
     //
@@ -62,19 +60,19 @@ contract DssSpellTest is DSTest, DSMath {
     Hevm hevm;
 
     DSPauseAbstract pause =
-        DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
+            DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
     DSChiefAbstract chief =
-         DSChiefAbstract(0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
+            DSChiefAbstract(0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
     VatAbstract vat =
-         VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
+                VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     CatAbstract cat =
-         CatAbstract(0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
+                CatAbstract(0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
     PotAbstract pot =
-         PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
+                PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
     JugAbstract jug =
-         JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
+                JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
     MKRAbstract gov =
-         MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
+                MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
     IlkRegistryAbstract registry =
         IlkRegistryAbstract(0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24);
 
@@ -135,6 +133,7 @@ contract DssSpellTest is DSTest, DSMath {
         afterSpell.collaterals["TUSD-A"].liquidations = 0;
         afterSpell.collaterals["PAXUSD-A"].liquidations = 0;
         afterSpell.collaterals["GUSD-A"].liquidations = 0;
+        afterSpell.collaterals[0x50534d2d555344432d4100000000000000000000000000000000000000000000].liquidations = 0; // Community Addition 12/26/2020
     }
 
     function vote() private {
