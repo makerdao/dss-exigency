@@ -61,16 +61,11 @@ contract IlkRegistryAbstract {
 import "lib/dss-interfaces/src/dss/ChainlogAbstract.sol";
 
 contract SpellAction {
-    // The contracts in this list should correspond to MCD core contracts, verify
+    // This address should correspond to the latest MCD Chainlog contract; verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.1.1/contracts.json
-    //
-    address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
-    address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    address constant MCD_POT      = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant FLIPPER_MOM  = 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472;
-    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
-
+    //     https://changelog.makerdao.com/releases/mainnet/active/contracts.json
+    ChainlogAbstract constant CHANGELOG =
+        ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     // Many of the settings that change weekly rely on the rate accumulator
     // described at https://docs.makerdao.com/smart-contract-modules/rates-module
@@ -89,6 +84,11 @@ contract SpellAction {
     uint256 constant BLN = 10**9;
 
     function execute() external {
+        address constant MCD_VAT      = CHANGELOG.getAddress("MCD_VAT");
+        address constant MCD_JUG      = CHANGELOG.getAddress("MCD_JUG");
+        address constant MCD_POT      = CHANGELOG.getAddress("MCD_POT");
+        address constant FLIPPER_MOM  = CHANGELOG.getAddress("FLIPPER_MOM");
+        address constant ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
         uint256 totalLine = 0;
 
         // MCD Modifications
