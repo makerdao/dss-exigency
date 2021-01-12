@@ -73,8 +73,8 @@ contract DssSpellTest is DSTest, DSMath {
          PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
     JugAbstract jug =
          JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
-    MKRAbstract gov =
-         MKRAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
+    DSTokenAbstract gov =
+         DSTokenAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
     IlkRegistryAbstract registry =
         IlkRegistryAbstract(0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24);
 
