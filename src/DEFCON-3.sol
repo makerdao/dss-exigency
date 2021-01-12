@@ -15,6 +15,8 @@
 
 pragma solidity 0.5.12;
 
+import "lib/dss-interfaces/src/dss/ChainlogAbstract.sol";
+
 // https://github.com/dapphub/ds-pause
 contract DSPauseAbstract {
     function delay() public view returns (uint256);
@@ -59,15 +61,11 @@ contract IlkRegistryAbstract {
 }
 
 contract SpellAction {
-    // The contracts in this list should correspond to MCD core contracts, verify
+    // This address should correspond to the latest MCD Chainlog contract; verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.1.1/contracts.json
-    //
-    address constant MCD_VAT      = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
-    address constant MCD_JUG      = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
-    address constant MCD_POT      = 0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7;
-    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
-
+    //     https://changelog.makerdao.com/releases/mainnet/active/contracts.json
+    ChainlogAbstract constant CHANGELOG =
+        ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     // Many of the settings that change weekly rely on the rate accumulator
     // described at https://docs.makerdao.com/smart-contract-modules/rates-module
@@ -86,6 +84,10 @@ contract SpellAction {
     uint256 constant BLN = 10**9;
 
     function execute() external {
+        address constant MCD_VAT      = CHANGELOG.getAddress("MCD_VAT");
+        address constant MCD_JUG      = CHANGELOG.getAddress("MCD_JUG");
+        address constant MCD_POT      = CHANGELOG.getAddress("MCD_POT");
+        address constant ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
         uint256 totalLine = 0;
 
         // MCD Modifications
@@ -144,6 +146,11 @@ contract SpellAction {
 }
 
 contract DssSpell {
+    // This address should correspond to the latest MCD Chainlog contract; verify
+    //  against the current release list at:
+    //     https://changelog.makerdao.com/releases/mainnet/active/contracts.json
+    ChainlogAbstract constant CHANGELOG =
+        ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     DSPauseAbstract  public pause;
     address          public action;
@@ -153,8 +160,8 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
-    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
+    address constant MCD_PAUSE    = CHANGELOG.getAddress("MCD_PAUSE");
+    address constant ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
 
     uint256 constant T2021_02_01_1200UTC = 1612180800;
 
