@@ -58,6 +58,8 @@ contract IlkRegistryAbstract {
     function flip(bytes32) external view returns (address);
 }
 
+import "lib/dss-interfaces/src/dss/ChainlogAbstract.sol";
+
 contract SpellAction {
     // The contracts in this list should correspond to MCD core contracts, verify
     //  against the current release list at:
