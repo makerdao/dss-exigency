@@ -57,7 +57,7 @@ contract SpellAction {
     uint256 constant BLN = 10**9;
 
     function execute() external {
-        address constant MCD_VAT = CHANGELOG.getAddress("MCD_VAT");
+        address MCD_VAT = CHANGELOG.getAddress("MCD_VAT");
         require(VatAbstract(MCD_VAT).wards(address(this)) == 1, "no-access");
     }
 }
@@ -77,16 +77,13 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    address constant MCD_PAUSE    = CHANGELOG.getAddress("MCD_PAUSE");
-    address constant FLIPPER_MOM  = CHANGELOG.getAddress("FLIPPER_MOM");
-    address constant ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
-
     uint256 constant T2021_02_01_1200UTC = 1612180800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-5 Emergency Spell";
 
     constructor() public {
+        address MCD_PAUSE = CHANGELOG.getAddress("MCD_PAUSE");
         sig = abi.encodeWithSignature("execute()");
         action = address(new SpellAction());
         bytes32 _tag;
@@ -100,6 +97,8 @@ contract DssSpell {
     function schedule() public {
         require(now <= expiration, "This contract has expired");
         require(eta == 0, "This spell has already been scheduled");
+        address FLIPPER_MOM  = CHANGELOG.getAddress("FLIPPER_MOM");
+        address ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
         eta = now + pause.delay();
         pause.plot(action, tag, sig, eta);
 
