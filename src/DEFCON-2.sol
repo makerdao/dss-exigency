@@ -15,8 +15,6 @@
 
 pragma solidity 0.5.12;
 
-import "lib/dss-interfaces/src/dss/ChainlogAbstract.sol";
-
 // https://github.com/dapphub/ds-pause
 contract DSPauseAbstract {
     function delay() public view returns (uint256);
@@ -58,6 +56,11 @@ contract FlipperMomAbstract {
 contract IlkRegistryAbstract {
     function list() external view returns (bytes32[] memory);
     function flip(bytes32) external view returns (address);
+}
+
+// https://github.com/makerdao/dss-chain-log/blob/master/src/ChainLog.sol
+contract ChainlogAbstract {
+    function getAddress(bytes32) public view returns (address);
 }
 
 contract SpellAction {
