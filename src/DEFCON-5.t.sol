@@ -83,7 +83,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     // expiration time for this DEFCON spell
-    uint256 constant public T2021_02_01_1200UTC = 1612180800;
+    uint256 constant public T2021_07_01_1200UTC = 1625140800;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
@@ -96,14 +96,14 @@ contract DssSpellTest is DSTest, DSMath {
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
         afterSpell = SystemValues({
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
         bytes32[] memory ilks = registry.list();

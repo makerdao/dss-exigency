@@ -28,9 +28,7 @@ contract Hevm {
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(
-        0xf9f794CE408b206fd63FC2CA9D2f7224B24d9516
-    );
+    address constant MAINNET_SPELL = address(0);
 
     // Common orders of magnitude needed in spells
     //
@@ -85,7 +83,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     // expiration time for this DEFCON spell
-    uint256 constant public T2021_02_01_1200UTC = 1612180800;
+    uint256 constant public T2021_07_01_1200UTC = 1625140800;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
@@ -98,14 +96,14 @@ contract DssSpellTest is DSTest, DSMath {
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
         afterSpell = SystemValues({
             dsr: 1000000000000000000000000000,
             Line: vat.Line() + (50 * MLN * RAD),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
         bytes32[] memory ilks = registry.list();

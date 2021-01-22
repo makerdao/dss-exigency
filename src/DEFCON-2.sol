@@ -160,7 +160,7 @@ contract DssSpell {
     address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
     address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
 
-    uint256 constant T2021_02_01_1200UTC = 1612180800;
+    uint256 constant T2021_07_01_1200UTC = 1625140800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-2 Emergency Spell";
@@ -173,7 +173,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2021_02_01_1200UTC;
+        expiration = T2021_07_01_1200UTC;
     }
 
     function schedule() public {

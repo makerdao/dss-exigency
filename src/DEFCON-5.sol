@@ -72,7 +72,7 @@ contract DssSpell {
     address constant FLIPPER_MOM  = 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472;
     address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
 
-    uint256 constant T2021_02_01_1200UTC = 1612180800;
+    uint256 constant T2021_07_01_1200UTC = 1625140800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-5 Emergency Spell";
@@ -85,7 +85,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2021_02_01_1200UTC;
+        expiration = T2021_07_01_1200UTC;
     }
 
     function schedule() public {
@@ -102,12 +102,13 @@ contract DssSpell {
         for (uint i = 0; i < ilks.length; i++) {
             // skip the rest of the loop for the following ilks:
             //
-            if (ilks[i] == "USDC-A"   ||
+            if (
+                ilks[i] == "USDC-A"   ||
                 ilks[i] == "USDC-B"   ||
                 ilks[i] == "TUSD-A"   ||
                 ilks[i] == "PAXUSD-A" ||
                 ilks[i] == "GUSD-A"   ||
-                ilks[i] == 0x50534d2d555344432d4100000000000000000000000000000000000000000000
+                ilks[i] == "PSM-USDC-A"
             ) { continue; }
 
             // Enable collateral liquidations
