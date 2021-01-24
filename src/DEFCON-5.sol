@@ -39,12 +39,17 @@ contract IlkRegistryAbstract {
     function flip(bytes32) external view returns (address);
 }
 
+// https://github.com/makerdao/dss-chain-log/blob/master/src/ChainLog.sol
+contract ChainlogAbstract {
+    function getAddress(bytes32) public view returns (address);
+}
+
 contract SpellAction {
-    // The contracts in this list should correspond to MCD core contracts, verify
+    // This address should correspond to the latest MCD Chainlog contract; verify
     //  against the current release list at:
-    //     https://changelog.makerdao.com/releases/mainnet/1.1.1/contracts.json
-    //
-    address constant MCD_VAT = 0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B;
+    //     https://changelog.makerdao.com/releases/mainnet/active/contracts.json
+    ChainlogAbstract constant CHANGELOG =
+        ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
 
     // Common orders of magnitude needed in spells
     //
@@ -55,11 +60,18 @@ contract SpellAction {
     uint256 constant BLN = 10**9;
 
     function execute() external {
+        address MCD_VAT = CHANGELOG.getAddress("MCD_VAT");
         require(VatAbstract(MCD_VAT).wards(address(this)) == 1, "no-access");
     }
 }
 
 contract DssSpell {
+    // This address should correspond to the latest MCD Chainlog contract; verify
+    //  against the current release list at:
+    //     https://changelog.makerdao.com/releases/mainnet/active/contracts.json
+    ChainlogAbstract constant CHANGELOG =
+        ChainlogAbstract(0xdA0Ab1e0017DEbCd72Be8599041a2aa3bA7e740F);
+
     DSPauseAbstract  public pause;
     address          public action;
     bytes32          public tag;
@@ -68,16 +80,13 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    address constant MCD_PAUSE    = 0xbE286431454714F511008713973d3B053A2d38f3;
-    address constant FLIPPER_MOM  = 0xc4bE7F74Ee3743bDEd8E0fA218ee5cf06397f472;
-    address constant ILK_REGISTRY = 0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24;
-
     uint256 constant T2021_02_01_1200UTC = 1612180800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-5 Emergency Spell";
 
     constructor() public {
+        address MCD_PAUSE = CHANGELOG.getAddress("MCD_PAUSE");
         sig = abi.encodeWithSignature("execute()");
         action = address(new SpellAction());
         bytes32 _tag;
@@ -91,6 +100,8 @@ contract DssSpell {
     function schedule() public {
         require(now <= expiration, "This contract has expired");
         require(eta == 0, "This spell has already been scheduled");
+        address FLIPPER_MOM  = CHANGELOG.getAddress("FLIPPER_MOM");
+        address ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
         eta = now + pause.delay();
         pause.plot(action, tag, sig, eta);
 
