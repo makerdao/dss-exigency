@@ -44,6 +44,7 @@ contract VatAbstract {
 // https://github.com/makerdao/dss/blob/master/src/flip.sol
 contract FlipAbstract {
     function file(bytes32, uint256) external;
+    function wards(address) external view returns (uint256);
 }
 
 // https://github.com/makerdao/flipper-mom/blob/master/src/FlipperMom.sol
@@ -209,7 +210,9 @@ contract DssSpell {
             // This change will prevent liquidations across all collateral types
             // and is colloquially referred to as the circuit breaker.
             //
-            FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            if (FlipAbstract(registry.flip(ilks[i])).wards(FLIPPER_MOM) == 1) {
+                FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            }
         }
     }
 
