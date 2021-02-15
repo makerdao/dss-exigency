@@ -195,16 +195,6 @@ contract DssSpell {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
-            // skip the rest of the loop for the following ilks:
-            //
-            if (ilks[i] == "USDC-A"   ||
-                ilks[i] == "USDC-B"   ||
-                ilks[i] == "TUSD-A"   ||
-                ilks[i] == "PAXUSD-A" ||
-                ilks[i] == "GUSD-A"   ||
-                ilks[i] == "PSM-USDC-A"
-             ) { continue; }
-
             // Disable all collateral liquidations
             //
             // This change will prevent liquidations across all collateral types
