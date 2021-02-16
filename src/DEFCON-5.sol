@@ -116,6 +116,9 @@ contract DssSpell {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
+            if (ilks[i] == "PSM-USDC-A") {
+                continue;
+            }
             // Enable collateral liquidations
             //
             // This change will enable liquidations for collateral types
