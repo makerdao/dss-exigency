@@ -128,8 +128,8 @@ contract DssSpellTest is DSTest, DSMath {
             });
         }
 
-        beforeSpell.collaterals["UNIV2DAIUSDC-A"].liquidations = 1;
         afterSpell.collaterals["PSM-USDC-A"].liquidations = 0;
+        afterSpell.collaterals["UNIV2DAIUSDC-A"].liquidations = 0;
         afterSpell.collaterals["USDC-A"].liquidations = 0;
         afterSpell.collaterals["USDC-B"].liquidations = 0;
         afterSpell.collaterals["TUSD-A"].liquidations = 0;
