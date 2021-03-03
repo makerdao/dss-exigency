@@ -99,13 +99,7 @@ contract DssSpellTest is DSTest, DSMath {
             expiration: T2021_07_01_1200UTC
         });
 
-        afterSpell = SystemValues({
-            dsr: 1000000000000000000000000000,
-            Line: vat.Line() + (50 * MLN * RAD),
-            pauseDelay: pause.delay(),
-            expiration: T2021_07_01_1200UTC
-        });
-
+        uint256 sumlines;
         bytes32[] memory ilks = registry.list();
 
         for(uint i = 0; i < ilks.length; i++) {
@@ -133,7 +127,15 @@ contract DssSpellTest is DSTest, DSMath {
                     line + (50 * MLN * RAD);
                 afterSpell.collaterals["USDC-B"].duty = duty;
             }
+            sumlines += line;
         }
+
+        afterSpell = SystemValues({
+            dsr: 1000000000000000000000000000,
+            Line: sumlines + (50 * MLN * RAD),
+            pauseDelay: pause.delay(),
+            expiration: T2021_07_01_1200UTC
+        });
     }
 
     function vote() private {

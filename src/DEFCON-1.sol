@@ -44,6 +44,7 @@ contract VatAbstract {
 // https://github.com/makerdao/dss/blob/master/src/flip.sol
 contract FlipAbstract {
     function file(bytes32, uint256) external;
+    function wards(address) external view returns (uint256);
 }
 
 // https://github.com/makerdao/flipper-mom/blob/master/src/FlipperMom.sol
@@ -194,22 +195,14 @@ contract DssSpell {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
-            // skip the rest of the loop for the following ilks:
-            //
-            if (ilks[i] == "USDC-A"   ||
-                ilks[i] == "USDC-B"   ||
-                ilks[i] == "TUSD-A"   ||
-                ilks[i] == "PAXUSD-A" ||
-                ilks[i] == "GUSD-A"   ||
-                ilks[i] == "PSM-USDC-A"
-             ) { continue; }
-
             // Disable all collateral liquidations
             //
             // This change will prevent liquidations across all collateral types
             // and is colloquially referred to as the circuit breaker.
             //
-            FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            if (FlipAbstract(registry.flip(ilks[i])).wards(FLIPPER_MOM) == 1) {
+                FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            }
         }
     }
 
