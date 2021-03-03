@@ -28,7 +28,7 @@ contract Hevm {
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(0);
+    address constant MAINNET_SPELL = address(0x0A352a23060cc58b05c4EEbA9F6E85Dbd37D7D91);
 
     // Common orders of magnitude needed in spells
     //
