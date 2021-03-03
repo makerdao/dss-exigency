@@ -28,9 +28,7 @@ contract Hevm {
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(
-        0xcAAdcFC74404D54987D0763fa46484C74D166e92
-    );
+    address constant MAINNET_SPELL = address(0x454ba3b18b71e1d4903C2E3052D554856b30ebE4);
 
     // Common orders of magnitude needed in spells
     //
@@ -85,7 +83,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     // expiration time for this DEFCON spell
-    uint256 constant public T2021_02_01_1200UTC = 1612180800;
+    uint256 constant public T2021_07_01_1200UTC = 1625140800;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
@@ -98,16 +96,10 @@ contract DssSpellTest is DSTest, DSMath {
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
-        afterSpell = SystemValues({
-            dsr: 1000000000000000000000000000,
-            Line: vat.Line() + (50 * MLN * RAD),
-            pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
-        });
-
+        uint256 sumlines;
         bytes32[] memory ilks = registry.list();
 
         for(uint i = 0; i < ilks.length; i++) {
@@ -135,7 +127,15 @@ contract DssSpellTest is DSTest, DSMath {
                     line + (50 * MLN * RAD);
                 afterSpell.collaterals["USDC-B"].duty = duty;
             }
+            sumlines += line;
         }
+
+        afterSpell = SystemValues({
+            dsr: 1000000000000000000000000000,
+            Line: sumlines + (50 * MLN * RAD),
+            pauseDelay: pause.delay(),
+            expiration: T2021_07_01_1200UTC
+        });
     }
 
     function vote() private {

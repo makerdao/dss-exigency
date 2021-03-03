@@ -44,6 +44,7 @@ contract VatAbstract {
 // https://github.com/makerdao/dss/blob/master/src/flip.sol
 contract FlipAbstract {
     function file(bytes32, uint256) external;
+    function wards(address) external view returns (uint256);
 }
 
 // https://github.com/makerdao/flipper-mom/blob/master/src/FlipperMom.sol
@@ -90,7 +91,6 @@ contract SpellAction {
         address MCD_VAT      = CHANGELOG.getAddress("MCD_VAT");
         address MCD_JUG      = CHANGELOG.getAddress("MCD_JUG");
         address MCD_POT      = CHANGELOG.getAddress("MCD_POT");
-        address FLIPPER_MOM  = CHANGELOG.getAddress("FLIPPER_MOM");
         address ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
         uint256 totalLine = 0;
 
@@ -164,7 +164,7 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    uint256 constant T2021_02_01_1200UTC = 1612180800;
+    uint256 constant T2021_07_01_1200UTC = 1625140800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-1 Emergency Spell";
@@ -178,7 +178,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2021_02_01_1200UTC;
+        expiration = T2021_07_01_1200UTC;
     }
 
     function schedule() public {
@@ -200,7 +200,9 @@ contract DssSpell {
             // This change will prevent liquidations across all collateral types
             // and is colloquially referred to as the circuit breaker.
             //
-            FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            if (FlipAbstract(registry.flip(ilks[i])).wards(FLIPPER_MOM) == 1) {
+                FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            }
         }
     }
 

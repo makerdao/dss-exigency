@@ -27,6 +27,11 @@ contract VatAbstract {
     function wards(address) external view returns (uint256);
 }
 
+// https://github.com/makerdao/dss/blob/master/src/flip.sol
+contract FlipAbstract {
+    function wards(address) external view returns (uint256);
+}
+
 // https://github.com/makerdao/flipper-mom/blob/master/src/FlipperMom.sol
 contract FlipperMomAbstract {
     function rely(address) external;
@@ -80,7 +85,7 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    uint256 constant T2021_02_01_1200UTC = 1612180800;
+    uint256 constant T2021_07_01_1200UTC = 1625140800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-5 Emergency Spell";
@@ -94,7 +99,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2021_02_01_1200UTC;
+        expiration = T2021_07_01_1200UTC;
     }
 
     function schedule() public {
@@ -111,22 +116,14 @@ contract DssSpell {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
-            // skip the rest of the loop for the following ilks:
-            //
-            if (ilks[i] == "USDC-A"   ||
-                ilks[i] == "USDC-B"   ||
-                ilks[i] == "TUSD-A"   ||
-                ilks[i] == "PAXUSD-A" ||
-                ilks[i] == "GUSD-A"   ||
-                ilks[i] == 0x50534d2d555344432d4100000000000000000000000000000000000000000000
-            ) { continue; }
-
             // Enable collateral liquidations
             //
             // This change will enable liquidations for collateral types
             // and is colloquially referred to as the "circuit breaker".
             //
-            FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
+            if (FlipAbstract(registry.flip(ilks[i])).wards(FLIPPER_MOM) == 1) {
+                FlipperMomAbstract(FLIPPER_MOM).rely(registry.flip(ilks[i]));
+            }
         }
     }
 

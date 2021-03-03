@@ -163,7 +163,7 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    uint256 constant T2021_02_01_1200UTC = 1612180800;
+    uint256 constant T2021_07_01_1200UTC = 1625140800;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-3 Emergency Spell";
@@ -177,13 +177,12 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2021_02_01_1200UTC;
+        expiration = T2021_07_01_1200UTC;
     }
 
     function schedule() public {
         require(now <= expiration, "This contract has expired");
         require(eta == 0, "This spell has already been scheduled");
-        address ILK_REGISTRY = CHANGELOG.getAddress("ILK_REGISTRY");
         eta = now + pause.delay();
         pause.plot(action, tag, sig, eta);
     }

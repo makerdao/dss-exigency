@@ -28,7 +28,7 @@ contract Hevm {
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(0);
+    address constant MAINNET_SPELL = address(0x639145eE45fE1e70BBa61B4b67288d5E42A1A79B);
 
     // Common orders of magnitude needed in spells
     //
@@ -83,7 +83,7 @@ contract DssSpellTest is DSTest, DSMath {
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     // expiration time for this DEFCON spell
-    uint256 constant public T2021_02_01_1200UTC = 1612180800;
+    uint256 constant public T2021_07_01_1200UTC = 1625140800;
 
     function setUp() public {
         hevm = Hevm(address(CHEAT_CODE));
@@ -96,14 +96,14 @@ contract DssSpellTest is DSTest, DSMath {
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
         afterSpell = SystemValues({
             dsr: pot.dsr(),
             Line: vat.Line(),
             pauseDelay: pause.delay(),
-            expiration: T2021_02_01_1200UTC
+            expiration: T2021_07_01_1200UTC
         });
 
         bytes32[] memory ilks = registry.list();
@@ -128,6 +128,8 @@ contract DssSpellTest is DSTest, DSMath {
             });
         }
 
+        afterSpell.collaterals["PSM-USDC-A"].liquidations = 0;
+        afterSpell.collaterals["UNIV2DAIUSDC-A"].liquidations = 0;
         afterSpell.collaterals["USDC-A"].liquidations = 0;
         afterSpell.collaterals["USDC-B"].liquidations = 0;
         afterSpell.collaterals["TUSD-A"].liquidations = 0;
