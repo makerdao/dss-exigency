@@ -6,8 +6,6 @@ set -e
 export DAPP_BUILD_OPTIMIZE=1
 export DAPP_BUILD_OPTIMIZE_RUNS=1
 
-nix-env -f https://github.com/dapphub/dapptools/archive/master.tar.gz -iA solc-static-versions.solc_0_5_12
-
 if [[ -z "$1" ]]; then
   dapp --use solc:0.5.12 test --rpc-url="$ETH_RPC_URL" --verbose 1 --match='testDEFCON[1-5]'
 else
