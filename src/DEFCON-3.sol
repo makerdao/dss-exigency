@@ -55,7 +55,7 @@ contract FlipperMomAbstract {
 // https://github.com/makerdao/ilk-registry/blob/master/src/IlkRegistry.sol
 contract IlkRegistryAbstract {
     function list() external view returns (bytes32[] memory);
-    function flip(bytes32) external view returns (address);
+    function xlip(bytes32) external view returns (address);
 }
 
 // https://github.com/makerdao/dss-chain-log/blob/master/src/ChainLog.sol
@@ -111,6 +111,7 @@ contract SpellAction {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
+
             // skip the rest of the loop for the following ilks:
             //
             if (ilks[i] == "USDC-B") {
