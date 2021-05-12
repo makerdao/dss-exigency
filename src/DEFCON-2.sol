@@ -55,7 +55,8 @@ contract FlipperMomAbstract {
 // https://github.com/makerdao/ilk-registry/blob/master/src/IlkRegistry.sol
 contract IlkRegistryAbstract {
     function list() external view returns (bytes32[] memory);
-    function flip(bytes32) external view returns (address);
+    function xlip(bytes32) external view returns (address);
+    function class(bytes32) external view returns (uint256);
 }
 
 // https://github.com/makerdao/dss-chain-log/blob/master/src/ChainLog.sol
@@ -111,23 +112,25 @@ contract SpellAction {
         bytes32[] memory ilks = registry.list();
 
         for (uint i = 0; i < ilks.length; i++) {
-            // Set the ilk's flip tau
-            //
-            FlipAbstract(registry.flip(ilks[i])).file(bytes32("tau"), 24 hours);
+            if (registry.class(ilks[i]) == 2) {
+                // Set the ilk's flip tau
+                //
+                FlipAbstract(registry.xlip(ilks[i])).file(bytes32("tau"), 24 hours);
 
-            // skip the rest of the loop for the following ilks:
-            //
-            if (ilks[i] == "USDC-B") {
-                continue;
+                // skip the rest of the loop for the following ilks:
+                //
+                if (ilks[i] == "USDC-B") {
+                    continue;
+                }
+
+                // Always drip the ilk prior to modifications (housekeeping)
+                //
+                JugAbstract(MCD_JUG).drip(ilks[i]);
+
+                // Set the ilk stability fee
+                //
+                JugAbstract(MCD_JUG).file(ilks[i], "duty", ZERO_PCT_RATE);
             }
-
-            // Always drip the ilk prior to modifications (housekeeping)
-            //
-            JugAbstract(MCD_JUG).drip(ilks[i]);
-
-            // Set the ilk stability fee
-            //
-            JugAbstract(MCD_JUG).file(ilks[i], "duty", ZERO_PCT_RATE);
 
             // Keep a running total of all ilk Debt Ceilings
             //

@@ -56,7 +56,8 @@ contract FlipperMomAbstract {
 // https://github.com/makerdao/ilk-registry/blob/master/src/IlkRegistry.sol
 contract IlkRegistryAbstract {
     function list() external view returns (bytes32[] memory);
-    function flip(bytes32) external view returns (address);
+    function xlip(bytes32) external view returns (address);
+    function class(bytes32) external view returns (uint256);
 }
 
 // https://github.com/makerdao/dss-chain-log/blob/master/src/ChainLog.sol
@@ -200,8 +201,8 @@ contract DssSpell {
             // This change will prevent liquidations across all collateral types
             // and is colloquially referred to as the circuit breaker.
             //
-            if (FlipAbstract(registry.flip(ilks[i])).wards(FLIPPER_MOM) == 1) {
-                FlipperMomAbstract(FLIPPER_MOM).deny(registry.flip(ilks[i]));
+            if (registry.class(ilks[i]) == 2 && FlipAbstract(registry.xlip(ilks[i])).wards(FLIPPER_MOM) == 1) {
+                FlipperMomAbstract(FLIPPER_MOM).deny(registry.xlip(ilks[i]));
             }
         }
     }

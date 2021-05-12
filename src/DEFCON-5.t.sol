@@ -28,7 +28,7 @@ contract Hevm {
 
 contract DssSpellTest is DSTest, DSMath {
     // Replace with mainnet spell address to test against live
-    address constant MAINNET_SPELL = address(0x639145eE45fE1e70BBa61B4b67288d5E42A1A79B);
+    address constant MAINNET_SPELL = address(0);
 
     // Common orders of magnitude needed in spells
     //
@@ -60,21 +60,23 @@ contract DssSpellTest is DSTest, DSMath {
     Hevm hevm;
 
     DSPauseAbstract pause =
-            DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
+        DSPauseAbstract(0xbE286431454714F511008713973d3B053A2d38f3);
     DSChiefAbstract chief =
-            DSChiefAbstract(0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
+        DSChiefAbstract(0x0a3f6849f78076aefaDf113F5BED87720274dDC0);
     VatAbstract vat =
-                VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
+        VatAbstract(0x35D1b3F3D7966A1DFe207aa4514C12a259A0492B);
     CatAbstract cat =
-                CatAbstract(0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
+        CatAbstract(0xa5679C04fc3d9d8b0AaB1F0ab83555b301cA70Ea);
+    DogAbstract dog =
+        DogAbstract(0x135954d155898D42C90D2a57824C690e0c7BEf1B);
     PotAbstract pot =
-                PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
+        PotAbstract(0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7);
     JugAbstract jug =
-                JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
+        JugAbstract(0x19c0976f590D67707E62397C87829d896Dc0f1F1);
     DSTokenAbstract gov =
-                DSTokenAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
+        DSTokenAbstract(0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2);
     IlkRegistryAbstract registry =
-        IlkRegistryAbstract(0x8b4ce5DCbb01e0e1f0521cd8dCfb31B308E52c24);
+        IlkRegistryAbstract(0x5a464C28D19848f44199D003BeF5ecc87d090F87);
 
     DssSpell spell;
 
@@ -111,21 +113,24 @@ contract DssSpellTest is DSTest, DSMath {
         for(uint i = 0; i < ilks.length; i++) {
             (,,, uint256 line,) = vat.ilks(ilks[i]);
             (uint256 duty,) = jug.ilks(ilks[i]);
-            FlipAbstract flip = FlipAbstract(registry.flip(ilks[i]));
 
-            beforeSpell.collaterals[ilks[i]] = CollateralValues({
-                line: line,
-                duty: duty,
-                tau: flip.tau(),
-                liquidations: flip.wards(address(cat))
-            });
+            if (registry.class(ilks[i]) == 2) {
+                FlipAbstract flip = FlipAbstract(registry.xlip(ilks[i]));
 
-            afterSpell.collaterals[ilks[i]] = CollateralValues({
-                line: line,
-                duty: duty,
-                tau: flip.tau(),
-                liquidations: 1
-            });
+                beforeSpell.collaterals[ilks[i]] = CollateralValues({
+                    line: line,
+                    duty: duty,
+                    tau: flip.tau(),
+                    liquidations: flip.wards(address(cat))
+                });
+
+                afterSpell.collaterals[ilks[i]] = CollateralValues({
+                    line: line,
+                    duty: duty,
+                    tau: flip.tau(),
+                    liquidations: 1
+                });
+            }
         }
 
         afterSpell.collaterals["PSM-USDC-A"].liquidations = 0;
@@ -203,16 +208,18 @@ contract DssSpellTest is DSTest, DSMath {
         bytes32 ilk,
         SystemValues storage values
     ) internal {
-        FlipAbstract flip = FlipAbstract(registry.flip(ilk));
+        if (registry.class(ilk) == 2) {
+            FlipAbstract flip = FlipAbstract(registry.xlip(ilk));
 
-        (uint256 duty,) = jug.ilks(ilk);
-        assertEq(duty, values.collaterals[ilk].duty);
+            (uint256 duty,) = jug.ilks(ilk);
+            assertEq(duty, values.collaterals[ilk].duty);
 
-        (,,, uint256 line,) = vat.ilks(ilk);
-        assertEq(line, values.collaterals[ilk].line);
+            (,,, uint256 line,) = vat.ilks(ilk);
+            assertEq(line, values.collaterals[ilk].line);
 
-        assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
-        assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
+            assertEq(uint256(flip.tau()), values.collaterals[ilk].tau);
+            assertEq(flip.wards(address(cat)), values.collaterals[ilk].liquidations);
+        }
     }
 
     function testDEFCON5() public {
