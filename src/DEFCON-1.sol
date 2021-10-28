@@ -165,7 +165,7 @@ contract DssSpell {
     uint256          public expiration;
     bool             public done;
 
-    uint256 constant T2021_07_01_1200UTC = 1625140800;
+    uint256 constant T2022_12_30_1200UTC = 1672401600;
 
     // Provides a descriptive tag for bot consumption
     string constant public description = "DEFCON-1 Emergency Spell";
@@ -179,7 +179,7 @@ contract DssSpell {
         assembly { _tag := extcodehash(_action) }
         tag = _tag;
         pause = DSPauseAbstract(MCD_PAUSE);
-        expiration = T2021_07_01_1200UTC;
+        expiration = T2022_12_30_1200UTC;
     }
 
     function schedule() public {
